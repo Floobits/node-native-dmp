@@ -53,15 +53,15 @@ Handle<Value> PatchApply(const Arguments& args) {
     return scope.Close(Undefined());
   }
 
-  QString text1 = QString::fromUtf16(*v8::String::Value(args[0]));
-  QString text2 = QString(node::Buffer::Data(args[1]));
+  QString patch_text = QString::fromUtf16(*v8::String::Value(args[0]));
+  QString source_text = QString(node::Buffer::Data(args[1]));
 
-  QList<Patch> patches = dmp.patch_make(text1, text2);
+  QList<Patch> patches = dmp.patch_fromText(patch_text);
 
-  QString patch_text = dmp.patch_toText(patches);
+  QPair<QString, QVector<bool> > result = dmp.patch_apply(patches, source_text);
 
   // TODO: this is a SlowBuffer
-  return scope.Close(node::Buffer::New(patch_text.toUtf8(), patch_text.length())->handle_);
+  return scope.Close(node::Buffer::New(result.first.toUtf8(), result.first.length())->handle_);
 }
 
 void init(Handle<Object> exports) {
