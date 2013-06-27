@@ -36,6 +36,7 @@ Handle<Value> PatchMake(const Arguments& args) {
 
   QString patch_text = dmp.patch_toText(patches);
 
+  // TODO: this is a SlowBuffer
   return scope.Close(node::Buffer::New(patch_text.toUtf8(), patch_text.length())->handle_);
 }
 
