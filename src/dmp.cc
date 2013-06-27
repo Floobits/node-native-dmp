@@ -12,8 +12,8 @@ Handle<Value> Method(const Arguments& args) {
 }
 
 void init(Handle<Object> exports) {
-  exports->Set(String::NewSymbol("hello"),
+  exports->Set(String::NewSymbol("native_dmp"),
       FunctionTemplate::New(Method)->GetFunction());
 }
 
-NODE_MODULE(hello, init)
+NODE_MODULE(dmp, init)
