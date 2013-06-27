@@ -1,2 +1,3 @@
-.sublime-project
 *.o
+.sublime-project
+build

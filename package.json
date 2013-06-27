@@ -1,0 +1,41 @@
+{
+  "name": "native-dmp",
+  "homepage": "https://github.com/Floobits/node-native-dmp",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com:Floobits/node-native-dmp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Floobits/node-native-dmp/issues"
+  },
+  "contributors": [
+    "Matt Kaniaris <mkaniaris@gmail.com>",
+    "Geoff Greer <geoff@greer.fm>"
+  ],
+  "version": "0.0.1",
+  "dependencies": {
+  },
+  "devDependencies": {
+  },
+  "optionalDependencies": {
+  },
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "directories": {
+    "lib": "./lib",
+    "src": "./src"
+  },
+  "scripts": {
+    "build": "node-gyp configure build",
+    "test": "node-gyp test",
+    "preinstall": "node-gyp clean || (exit 0); node-gyp configure build",
+    "install": "node-gyp rebuild"
+  },
+  "licenses": [
+    {
+      "type": "Apache 2.0",
+      "url": "https://github.com/Floobits/node-native-dmp/blob/master/LICENSE"
+    }
+  ]
+}
