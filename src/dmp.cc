@@ -68,23 +68,38 @@ Handle<Value> PatchMake(const Arguments& args) {
 
 Handle<Value> PatchApply(const Arguments& args) {
   HandleScope scope;
+  QByteArray bytes;
+  QString text;
 
   if (args.Length() < 2) {
     ThrowException(Exception::TypeError(String::New("Wrong number of arguments. This function takes 2 arguments.")));
     return scope.Close(Undefined());
   }
 
-  if (!args[0]->IsString() || !node::Buffer::HasInstance(args[1])) {
-    ThrowException(Exception::TypeError(String::New("Wrong arguments. Arguments should be a string followed by a buffer.")));
+  if (args[1]->IsString()) {
+    text = QString::fromUtf16(*String::Value(args[1]));
+    qDebug() << "text" << text << text.length() << "\n";
+  }
+  if (node::Buffer::HasInstance(args[1])) {
+    bytes = QByteArray::fromRawData(node::Buffer::Data(args[1]), node::Buffer::Length(args[1]));
+    text = QString(bytes);
+    qDebug() << "text" << text << text.length() << bytes.length() <<"\n";
+  }
+
+  if (!args[0]->IsString() || text.isNull()) {
+    ThrowException(Exception::TypeError(String::New("Wrong arguments. Arguments should be a string followed by a string or buffer.")));
     return scope.Close(Undefined());
   }
 
   QString patch_text = QString::fromUtf16(*v8::String::Value(args[0]));
-  QString source_text = QString(node::Buffer::Data(args[1]));
-
   QList<Patch> patches = dmp.patch_fromText(patch_text);
 
-  QPair<QString, QVector<bool> > result = dmp.patch_apply(patches, source_text);
+  QPair<QString, QVector<bool> > result = dmp.patch_apply(patches, text);
+
+  // TODO: return results of the form ['That quick brown fox jumped over a lazy dog.', [true, true]]
+  if (args[1]->IsString()) {
+    return scope.Close(String::New(result.first.utf16()));
+  }
 
   node::Buffer *slow_buffer = node::Buffer::New(result.first.toUtf8(), result.first.length());
 
