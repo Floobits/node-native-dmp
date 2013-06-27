@@ -1,6 +1,9 @@
 #include <node.h>
 #include <v8.h>
 
+#include <QtCore>
+#include "diff_match_patch.h"
+
 using namespace v8;
 
 Handle<Value> Method(const Arguments& args) {
