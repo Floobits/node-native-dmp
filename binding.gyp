@@ -1,7 +1,7 @@
 {
   'targets': [
     {
-      'target_name': 'diff_match_patch',
+      'target_name': 'native-dmp',
       'sources': [
         'src/diff_match_patch.cpp',
         'src/dmp.cc'

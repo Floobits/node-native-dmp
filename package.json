@@ -27,7 +27,6 @@
     "src": "./src"
   },
   "scripts": {
-    "build": "node-gyp configure build",
     "test": "node-gyp test",
     "preinstall": "node-gyp clean || (exit 0); node-gyp configure build",
     "install": "node-gyp rebuild"
