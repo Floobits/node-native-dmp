@@ -7,6 +7,8 @@
 
 using namespace v8;
 
+diff_match_patch dmp;
+
 Handle<Value> Method(const Arguments& args) {
   HandleScope scope;
   return scope.Close(String::New("world"));
@@ -17,15 +19,14 @@ Handle<Value> Method(const Arguments& args) {
 
 Handle<Value> PatchMake(const Arguments& args) {
   HandleScope scope;
-  diff_match_patch dmp;
 
   if (args.Length() < 2) {
-    ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
+    ThrowException(Exception::TypeError(String::New("Wrong number of arguments. This function takes 2 arguments.")));
     return scope.Close(Undefined());
   }
 
   if (!node::Buffer::HasInstance(args[0]) || !node::Buffer::HasInstance(args[1])) {
-    ThrowException(Exception::TypeError(String::New("Wrong arguments- need buffers")));
+    ThrowException(Exception::TypeError(String::New("Wrong arguments. Both arguments must be buffers.")));
     return scope.Close(Undefined());
   }
 
@@ -36,13 +37,36 @@ Handle<Value> PatchMake(const Arguments& args) {
 
   QString patch_text = dmp.patch_toText(patches);
 
+  return scope.Close(String::New(patch_text.utf16()));
+}
+
+Handle<Value> PatchApply(const Arguments& args) {
+  HandleScope scope;
+
+  if (args.Length() < 2) {
+    ThrowException(Exception::TypeError(String::New("Wrong number of arguments. This function takes 2 arguments.")));
+    return scope.Close(Undefined());
+  }
+
+  if (!args[0]->IsString() || !node::Buffer::HasInstance(args[1])) {
+    ThrowException(Exception::TypeError(String::New("Wrong arguments. Arguments should be a string followed by a buffer.")));
+    return scope.Close(Undefined());
+  }
+
+  QString text1 = QString::fromUtf16(*v8::String::Value(args[0]));
+  QString text2 = QString(node::Buffer::Data(args[1]));
+
+  QList<Patch> patches = dmp.patch_make(text1, text2);
+
+  QString patch_text = dmp.patch_toText(patches);
+
   // TODO: this is a SlowBuffer
   return scope.Close(node::Buffer::New(patch_text.toUtf8(), patch_text.length())->handle_);
 }
 
-
 void init(Handle<Object> exports) {
   exports->Set(String::NewSymbol("patch_make"), FunctionTemplate::New(PatchMake)->GetFunction());
+  exports->Set(String::NewSymbol("patch_apply"), FunctionTemplate::New(PatchApply)->GetFunction());
 }
 
 NODE_MODULE(dmp, init)
