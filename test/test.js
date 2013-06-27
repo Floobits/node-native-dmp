@@ -54,7 +54,6 @@ function assertEquals(msg, v1, v2) {
     expected = msg;
     msg = 'Expected: \'' + v2 + '\' Actual: \'' + v1 + '\'';
   }
-  console.log("v1:", v1, "v2:", v2);
   assert.equal(v1, v2, msg);
 }
 
