@@ -813,7 +813,7 @@ void diff_match_patch::diff_cleanupSemantic(QList<Diff> &diffs) {
       thisDiff = &pointer.next();
     }
   }
-  while (thisDiff != NULL) {
+  while (thisDiff != NULL && prevDiff != NULL) {
     if (prevDiff->operation == DELETE &&
         thisDiff->operation == INSERT) {
       QString deletion = prevDiff->text;
@@ -869,7 +869,7 @@ void diff_match_patch::diff_cleanupSemanticLossless(QList<Diff> &diffs) {
   Diff *nextDiff = pointer.hasNext() ? &pointer.next() : NULL;
 
   // Intentionally ignore the first and last element (don't need checking).
-  while (nextDiff != NULL) {
+  while (nextDiff != NULL && thisDiff != NULL && prevDiff != NULL) {
     if (prevDiff->operation == EQUAL &&
       nextDiff->operation == EQUAL) {
         // This is a single edit surrounded by equalities.
@@ -1202,7 +1202,7 @@ void diff_match_patch::diff_cleanupMerge(QList<Diff> &diffs) {
   Diff *nextDiff = pointer.hasNext() ? &pointer.next() : NULL;
 
   // Intentionally ignore the first and last element (don't need checking).
-  while (nextDiff != NULL) {
+  while (nextDiff != NULL && thisDiff != NULL && prevDiff != NULL) {
     if (prevDiff->operation == EQUAL &&
       nextDiff->operation == EQUAL) {
         // This is a single edit surrounded by equalities.
@@ -1517,8 +1517,8 @@ int diff_match_patch::match_bitap(const QString &text, const QString &pattern,
         rd[j] = ((rd[j + 1] << 1) | 1) & charMatch;
       } else {
         // Subsequent passes: fuzzy match.
-        rd[j] = ((rd[j + 1] << 1) | 1) & charMatch
-            | (((last_rd[j + 1] | last_rd[j]) << 1) | 1)
+        rd[j] = (((rd[j + 1] << 1) | 1) & charMatch)
+            | (((last_rd[j + 1] | (last_rd[j]) << 1)) | 1)
             | last_rd[j + 1];
       }
       if ((rd[j] & matchmask) != 0) {
