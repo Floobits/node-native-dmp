@@ -251,6 +251,16 @@ function testPatchApply() {
   patches = dmp.patch_make('y', 'y123');
   results = dmp.patch_apply(patches, 'x');
   assertEquivalent(['x123', [true]], results);
+
+  // Binary
+  patches = dmp.patch_make(new Buffer([1,2,3]), new Buffer([1,2,3,4,5]));
+  results = dmp.patch_apply(patches, new Buffer([1,2,3]));
+  assertEquivalent([new Buffer([1,2,3,4,5]), [true]], results);
+
+  // Binary with null
+  patches = dmp.patch_make(new Buffer([1,2,3]), new Buffer([1,2,3,0,4,5]));
+  results = dmp.patch_apply(patches, new Buffer([1,2,3]));
+  assertEquivalent([new Buffer([1,2,3,0,4,5]), [true]], results);
 }
 
 testPatchMake();
