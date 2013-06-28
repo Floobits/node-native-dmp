@@ -182,12 +182,6 @@ void init(Handle<Object> exports) {
   exports->Set(String::NewSymbol("set_Patch_DeleteThreshold"), FunctionTemplate::New(set_Patch_DeleteThreshold)->GetFunction());
   exports->Set(String::NewSymbol("set_Match_Threshold"), FunctionTemplate::New(set_Match_Threshold)->GetFunction());
   exports->Set(String::NewSymbol("set_Match_Distance"), FunctionTemplate::New(set_Match_Distance)->GetFunction());
-/*
-  dmp.Patch_DeleteThreshold = 0.6f;
-  dmp.Match_Threshold = 0.0;
-  dmp.Match_Distance = 0;
-
- */
 }
 
 NODE_MODULE(dmp, init)
