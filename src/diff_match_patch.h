@@ -90,6 +90,7 @@ class Diff {
    */
   Diff(Operation _operation, const QString &_text);
   Diff(Operation _operation, const QByteArray &_text);
+  Diff(Operation _operation, const char* _text);
   Diff();
   inline bool isNull() const;
   QString toString() const;
@@ -175,6 +176,8 @@ class diff_match_patch {
    * @param text2 New string to be diffed.
    * @return Linked List of Diff objects.
    */
+  QList<Diff> diff_main(const char* text1, const char* text2);
+  QList<Diff> diff_main(const QString &text1, const QString &text2);
   QList<Diff> diff_main(const QByteArray &text1, const QByteArray &text2);
 
   /**
@@ -186,6 +189,8 @@ class diff_match_patch {
    *     If true, then run a faster slightly less optimal diff.
    * @return Linked List of Diff objects.
    */
+  QList<Diff> diff_main(const char* text1, const char* text2, bool checklines);
+  QList<Diff> diff_main(const QString &text1, const QString &text2, bool checklines);
   QList<Diff> diff_main(const QByteArray &text1, const QByteArray &text2, bool checklines);
 
   /**
@@ -239,7 +244,7 @@ class diff_match_patch {
    */
  protected:
   QList<Diff> diff_bisect(const QByteArray &text1, const QByteArray &text2, clock_t deadline);
-
+  QList<Diff> diff_bisect(const QString &text1, const QString &text2, clock_t deadline);
   /**
    * Given the location of the 'middle snake', split the diff in two parts
    * and recurse.
@@ -284,6 +289,7 @@ class diff_match_patch {
    * @param lineArray List of unique strings.
    */
  private:
+  void diff_charsToLines(QList<Diff> &diffs, const QStringList &lineArray);
   void diff_charsToLines(QList<Diff> &diffs, const QByteArrayList &lineArray);
 
   /**
@@ -312,6 +318,8 @@ class diff_match_patch {
    *     string and the start of the second string.
    */
  protected:
+  int diff_commonOverlap(const char* text1, const char* text2);
+  int diff_commonOverlap(const QString &text1, const QString &text2);
   int diff_commonOverlap(const QByteArray &text1, const QByteArray &text2);
 
   /**
@@ -446,6 +454,7 @@ class diff_match_patch {
    * @throws QByteArray If invalid input.
    */
  public:
+  QList<Diff> diff_fromDelta(const QString &text1, const QString &delta);
   QList<Diff> diff_fromDelta(const QByteArray &text1, const QByteArray &delta);
 
 
@@ -514,15 +523,8 @@ class diff_match_patch {
    * @return LinkedList of Patch objects.
    */
  public:
+  QList<Patch> patch_make(const char* text1, const char* text2);
   QList<Patch> patch_make(const QString &text1, const QString &text2);
-
-  /**
-   * Compute a list of patches to turn text1 into text2. (Binary safe)
-   * A set of diffs will be computed.
-   * @param text1 Old text.
-   * @param text2 New text.
-   * @return LinkedList of Patch objects.
-   */
   QList<Patch> patch_make(const QByteArray &text1, const QByteArray &text2);
 
   /**
@@ -544,6 +546,7 @@ class diff_match_patch {
    * @deprecated Prefer patch_make(const QByteArray &text1, const QList<Diff> &diffs).
    */
  public:
+  QList<Patch> patch_make(const QString &text1, const QString &text2, const QList<Diff> &diffs);
   QList<Patch> patch_make(const QByteArray &text1, const QByteArray &text2, const QList<Diff> &diffs);
 
   /**
@@ -554,6 +557,7 @@ class diff_match_patch {
    * @return LinkedList of Patch objects.
    */
  public:
+  QList<Patch> patch_make(const QString &text1, const QList<Diff> &diffs);
   QList<Patch> patch_make(const QByteArray &text1, const QList<Diff> &diffs);
 
   /**

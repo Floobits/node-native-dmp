@@ -192,7 +192,7 @@ void diff_match_patch_test::testDiffLinesToChars() {
   tmpVarList << QVariant::fromValue(chars);
   tmpVarList << QVariant::fromValue(QString(""));
   tmpVarList << QVariant::fromValue(tmpVector);
-  assertEquals("diff_linesToChars: More than 256.", tmpVarList, dmp.diff_linesToChars(lines, ""));
+  assertEquals("diff_linesToChars: More than 256.", tmpVarList, dmp.diff_linesToChars(lines.toUtf8(), ""));
 }
 
 void diff_match_patch_test::testDiffCharsToLines() {
@@ -843,10 +843,10 @@ void diff_match_patch_test::testPatchApply() {
   dmp.Patch_DeleteThreshold = 0.5f;
   QList<Patch> patches;
   patches = dmp.patch_make("", "");
-  QPair<QString, QVector<bool> > results = dmp.patch_apply(patches, "Hello world.");
+  QPair<QByteArray, QVector<bool> > results = dmp.patch_apply(patches, "Hello world.");
   QVector<bool> boolArray = results.second;
 
-  QString resultStr = QString("%1\t%2").arg(results.first).arg(boolArray.count());
+  QString resultStr = QString("%1\t%2").arg(results.first.data()).arg(boolArray.count());
   assertEquals("patch_apply: Null case.", "Hello world.\t0", resultStr);
 
   patches = dmp.patch_make("The quick brown fox jumps over the lazy dog.", "That quick brown fox jumped over a lazy dog.");
@@ -928,6 +928,15 @@ void diff_match_patch_test::testPatchApply() {
 void diff_match_patch_test::assertEquals(const QString &strCase, int n1, int n2) {
   if (n1 != n2) {
     qDebug("%s FAIL\nExpected: %d\nActual: %d", qPrintable(strCase), n1, n2);
+    throw strCase;
+  }
+  qDebug("%s OK", qPrintable(strCase));
+}
+
+void diff_match_patch_test::assertEquals(const QString &strCase, const char *s1, const QByteArray &s2) {
+  if (QByteArray(s1) != s2) {
+    qDebug("%s FAIL\nExpected: %s\nActual: %s",
+           qPrintable(strCase), qPrintable(s1), qPrintable(s2));
     throw strCase;
   }
   qDebug("%s OK", qPrintable(strCase));
@@ -1087,6 +1096,33 @@ void diff_match_patch_test::assertEquals(const QString &strCase, const QStringLi
   qDebug("%s OK", qPrintable(strCase));
 }
 
+void diff_match_patch_test::assertEquals(const QString &strCase, const QStringList &list1, const QByteArrayList &list2) {
+  if (list1.length() != list2.length()) {
+    qDebug("%s FAIL\nExpected: %s items\nActual: %s items", qPrintable(strCase),
+        qPrintable(list1.length()), qPrintable(list2.length()));
+    throw strCase;
+  }
+  for (int i = 0; i < list1.length(); i++) {
+    if (list1[i].toUtf8() != list2[i]) {
+      // TODO: print expected and actual
+      qDebug("%s FAIL\nExpected: %s\nActual:", qPrintable(strCase),
+          qPrintable(list1.join(",")));
+      throw strCase;
+    }
+  }
+  qDebug("%s OK", qPrintable(strCase));
+}
+
+void diff_match_patch_test::assertEquals(const QString &strCase, const QByteArrayList &list1, const QByteArrayList &list2) {
+  if (list1 != list2) {
+    // TODO: print expected and actual
+    qDebug("%s FAIL\nExpected:\nActual:", qPrintable(strCase));
+    throw strCase;
+  }
+  qDebug("%s OK", qPrintable(strCase));
+}
+
+
 void diff_match_patch_test::assertTrue(const QString &strCase, bool value) {
   if (!value) {
     qDebug("%s FAIL\nExpected: true\nActual: false", qPrintable(strCase));
@@ -1124,6 +1160,12 @@ void diff_match_patch_test::assertEmpty(const QString &strCase, const QStringLis
     throw strCase;
   }
 }
+void diff_match_patch_test::assertEmpty(const QString &strCase, const QByteArrayList &list) {
+  if (!list.isEmpty()) {
+    throw strCase;
+  }
+}
+
 
 
 // Private function for quickly building lists of diffs.
@@ -1131,52 +1173,52 @@ QList<Diff> diff_match_patch_test::diffList(Diff d1, Diff d2, Diff d3, Diff d4, 
   Diff d6, Diff d7, Diff d8, Diff d9, Diff d10) {
   // Diff(INSERT, NULL) is invalid and thus is used as the default argument.
   QList<Diff> listRet;
-  if (d1.operation == INSERT && d1.text == NULL) {
+  if (d1.operation == INSERT && d1.text == (char*)NULL) {
     return listRet;
   }
   listRet << d1;
 
-  if (d2.operation == INSERT && d2.text == NULL) {
+  if (d2.operation == INSERT && d2.text == (char*)NULL) {
     return listRet;
   }
   listRet << d2;
 
-  if (d3.operation == INSERT && d3.text == NULL) {
+  if (d3.operation == INSERT && d3.text == (char*)NULL) {
     return listRet;
   }
   listRet << d3;
 
-  if (d4.operation == INSERT && d4.text == NULL) {
+  if (d4.operation == INSERT && d4.text == (char*)NULL) {
     return listRet;
   }
   listRet << d4;
 
-  if (d5.operation == INSERT && d5.text == NULL) {
+  if (d5.operation == INSERT && d5.text == (char*)NULL) {
     return listRet;
   }
   listRet << d5;
 
-  if (d6.operation == INSERT && d6.text == NULL) {
+  if (d6.operation == INSERT && d6.text == (char*)NULL) {
     return listRet;
   }
   listRet << d6;
 
-  if (d7.operation == INSERT && d7.text == NULL) {
+  if (d7.operation == INSERT && d7.text == (char*)NULL) {
     return listRet;
   }
   listRet << d7;
 
-  if (d8.operation == INSERT && d8.text == NULL) {
+  if (d8.operation == INSERT && d8.text == (char*)NULL) {
     return listRet;
   }
   listRet << d8;
 
-  if (d9.operation == INSERT && d9.text == NULL) {
+  if (d9.operation == INSERT && d9.text == (char*)NULL) {
     return listRet;
   }
   listRet << d9;
 
-  if (d10.operation == INSERT && d10.text == NULL) {
+  if (d10.operation == INSERT && d10.text == (char*)NULL) {
     return listRet;
   }
   listRet << d10;

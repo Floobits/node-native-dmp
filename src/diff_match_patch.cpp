@@ -50,6 +50,11 @@ Diff::Diff(Operation _operation, const QByteArray &_text) :
   // Construct a diff with the specified operation and text.
 }
 
+Diff::Diff(Operation _operation, const char* _text) :
+  operation(_operation), text(_text) {
+  // Construct a diff with the specified operation and text.
+}
+
 Diff::Diff() {
 }
 
@@ -181,9 +186,29 @@ diff_match_patch::diff_match_patch() :
 }
 
 
+QList<Diff> diff_match_patch::diff_main(const char* text1,
+                                        const char* text2) {
+  return diff_main(QByteArray(text1), QByteArray(text2), true);
+}
+
+QList<Diff> diff_match_patch::diff_main(const QString &text1,
+                                        const QString &text2) {
+  return diff_main(text1.toUtf8(), text2.toUtf8(), true);
+}
+
 QList<Diff> diff_match_patch::diff_main(const QByteArray &text1,
                                         const QByteArray &text2) {
   return diff_main(text1, text2, true);
+}
+
+QList<Diff> diff_match_patch::diff_main(const char* text1,
+    const char* text2, bool checklines) {
+  return diff_main(QByteArray(text1), QByteArray(text2), checklines);
+}
+
+QList<Diff> diff_match_patch::diff_main(const QString &text1,
+    const QString &text2, bool checklines) {
+  return diff_main(text1.toUtf8(), text2.toUtf8(), checklines);
 }
 
 QList<Diff> diff_match_patch::diff_main(const QByteArray &text1,
@@ -379,6 +404,10 @@ QList<Diff> diff_match_patch::diff_lineMode(QByteArray text1, QByteArray text2,
   return diffs;
 }
 
+QList<Diff> diff_match_patch::diff_bisect(const QString &text1,
+    const QString &text2, clock_t deadline) {
+  return diff_bisect(text1.toUtf8(), text2.toUtf8(), deadline);
+}
 
 QList<Diff> diff_match_patch::diff_bisect(const QByteArray &text1,
     const QByteArray &text2, clock_t deadline) {
@@ -564,6 +593,19 @@ QByteArray diff_match_patch::diff_linesToCharsMunge(const QByteArray &text,
 }
 
 
+void diff_match_patch::diff_charsToLines(QList<Diff> &diffs,
+                                         const QStringList &lineArray) {
+  // Qt has no mutable foreach construct.
+  QMutableListIterator<Diff> i(diffs);
+  while (i.hasNext()) {
+    Diff &diff = i.next();
+    QByteArray text;
+    for (int y = 0; y < diff.text.length(); y++) {
+      text += lineArray.value(static_cast<ushort>(diff.text[y]));
+    }
+    diff.text = text;
+  }
+}
 
 void diff_match_patch::diff_charsToLines(QList<Diff> &diffs,
                                          const QByteArrayList &lineArray) {
@@ -605,6 +647,16 @@ int diff_match_patch::diff_commonSuffix(const QByteArray &text1,
     }
   }
   return n;
+}
+
+int diff_match_patch::diff_commonOverlap(const char* text1,
+                                         const char* text2) {
+  return diff_commonOverlap(QByteArray(text1), QByteArray(text2));
+}
+
+int diff_match_patch::diff_commonOverlap(const QString &text1,
+                                         const QString &text2) {
+  return diff_commonOverlap(text1.toUtf8(), text2.toUtf8());
 }
 
 int diff_match_patch::diff_commonOverlap(const QByteArray &text1,
@@ -1382,6 +1434,10 @@ QByteArray diff_match_patch::diff_toDelta(const QList<Diff> &diffs) {
   return text;
 }
 
+QList<Diff> diff_match_patch::diff_fromDelta(const QString &text1,
+                                             const QString &delta) {
+  return diff_fromDelta(text1.toUtf8(), delta.toUtf8());
+}
 
 QList<Diff> diff_match_patch::diff_fromDelta(const QByteArray &text1,
                                              const QByteArray &delta) {
@@ -1633,25 +1689,14 @@ void diff_match_patch::patch_addContext(Patch &patch, const QByteArray &text) {
   patch.length2 += prefix.length() + suffix.length();
 }
 
+QList<Patch> diff_match_patch::patch_make(const char* text1,
+                                          const char* text2) {
+  return patch_make(QByteArray(text1), QByteArray(text2));
+}
 
 QList<Patch> diff_match_patch::patch_make(const QString &text1,
                                           const QString &text2) {
-  // Check for null inputs.
-  if (text1.isNull() || text2.isNull()) {
-    throw "Null inputs. (patch_make)";
-  }
-
-  QByteArray bytes1 = text1.toUtf8();
-  QByteArray bytes2 = text2.toUtf8();
-
-  // No diffs provided, compute our own.
-  QList<Diff> diffs = diff_main(bytes1, bytes2, true);
-  if (diffs.size() > 2) {
-    diff_cleanupSemantic(diffs);
-    diff_cleanupEfficiency(diffs);
-  }
-
-  return patch_make(bytes1, diffs);
+  return patch_make(text1.toUtf8(), text2.toUtf8());
 }
 
 
@@ -1679,6 +1724,11 @@ QList<Patch> diff_match_patch::patch_make(const QList<Diff> &diffs) {
   return patch_make(text1, diffs);
 }
 
+QList<Patch> diff_match_patch::patch_make(const QString &text1,
+                                          const QString &text2,
+                                          const QList<Diff> &diffs) {
+  return patch_make(text1.toUtf8(), text2.toUtf8(), diffs);
+}
 
 QList<Patch> diff_match_patch::patch_make(const QByteArray &text1,
                                           const QByteArray &text2,
@@ -1689,6 +1739,10 @@ QList<Patch> diff_match_patch::patch_make(const QByteArray &text1,
   Q_UNUSED(text2)
 }
 
+QList<Patch> diff_match_patch::patch_make(const QString &text1,
+                                          const QList<Diff> &diffs) {
+  return patch_make(text1.toUtf8(), diffs);
+}
 
 QList<Patch> diff_match_patch::patch_make(const QByteArray &text1,
                                           const QList<Diff> &diffs) {
