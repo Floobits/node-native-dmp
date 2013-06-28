@@ -81,15 +81,12 @@ Handle<Value> PatchApply(const Arguments& args) {
 
   if (args[1]->IsString()) {
     text = QString::fromUtf16(*String::Value(args[1]));
-    qDebug() << "text" << text << text.length() << "\n";
-  }
-  if (node::Buffer::HasInstance(args[1])) {
-    bytes = QByteArray::fromRawData(node::Buffer::Data(args[1]), node::Buffer::Length(args[1]));
-    text = QString(bytes);
+    bytes = text.toUtf8();
     qDebug() << "text" << text << text.length() << bytes.length() <<"\n";
-  }
-
-  if (!args[0]->IsString() || text.isNull()) {
+  } else if (node::Buffer::HasInstance(args[1])) {
+    bytes = QByteArray::fromRawData(node::Buffer::Data(args[1]), node::Buffer::Length(args[1]));
+    qDebug() << "text" << text << text.length() << bytes.length() <<"\n";
+  } else {
     ThrowException(Exception::TypeError(String::New("Wrong arguments. Arguments should be a string followed by a string or buffer.")));
     return scope.Close(Undefined());
   }
@@ -97,7 +94,7 @@ Handle<Value> PatchApply(const Arguments& args) {
   QString patch_text = QString::fromUtf16(*String::Value(args[0]));
   QList<Patch> patches = dmp.patch_fromText(patch_text);
 
-  QPair<QString, QVector<bool> > result = dmp.patch_apply(patches, text);
+  QPair<QByteArray, QVector<bool> > result = dmp.patch_apply(patches, bytes);
 
   Handle<Array> arr = Array::New(2);
 
@@ -109,12 +106,12 @@ Handle<Value> PatchApply(const Arguments& args) {
 
   // TODO: return results of the form ['That quick brown fox jumped over a lazy dog.', [true, true]]
   if (args[1]->IsString()) {
-    Handle<String> text = String::New(result.first.utf16());
+    Handle<String> text = String::New(result.first);
     arr->Set(0, text);
     return scope.Close(arr);
   }
 
-  node::Buffer *slow_buffer = node::Buffer::New(result.first.toUtf8(), result.first.length());
+  node::Buffer *slow_buffer = node::Buffer::New(result.first, result.first.length());
 
   // Turn slow buffer into fast buffer. Taken from http://luismreis.github.io/node-bindings-guide/docs/returning.html
   Local<Object> globalObj = Context::GetCurrent()->Global();
@@ -126,25 +123,6 @@ Handle<Value> PatchApply(const Arguments& args) {
 
   return scope.Close(arr);
 }
-
-/*
-string urlDecode(string &SRC) {
-    string ret;
-    char ch;
-    int i, ii;
-    for (i=0; i<SRC.length(); i++) {
-        if (int(SRC[i])==37) {
-            sscanf(SRC.substr(i+1,2).c_str(), "%x", &ii);
-            ch=static_cast<char>(ii);
-            ret+=ch;
-            i=i+2;
-        } else {
-            ret+=SRC[i];
-        }
-    }
-    return (ret);
-}
-*/
 
 Handle<Value> set_Patch_DeleteThreshold(const Arguments& args) {
   HandleScope scope;
