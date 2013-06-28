@@ -609,7 +609,7 @@ class diff_match_patch {
    * @throws QString If invalid input.
    */
  public:
-  QList<Patch> patch_fromText(const QByteArray &textline);
+  QList<Patch> patch_fromText(const QString &textline);
 
   /**
    * A safer version of QString.mid(pos).  This one returns "" instead of

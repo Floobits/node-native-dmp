@@ -2066,20 +2066,19 @@ QString diff_match_patch::patch_toText(const QList<Patch> &patches) {
 }
 
 
-QList<Patch> diff_match_patch::patch_fromText(const QByteArray &textline) {
+QList<Patch> diff_match_patch::patch_fromText(const QString &textline) {
   QList<Patch> patches;
   if (textline.isEmpty()) {
     return patches;
   }
-  // TODO , QByteArray::SkipEmptyParts
-  QByteArrayList text = textline.split('\n');
+  QStringList text = textline.split("\n", QString::SkipEmptyParts);
   Patch patch;
   QRegExp patchHeader("^@@ -(\\d+),?(\\d*) \\+(\\d+),?(\\d*) @@$");
   char sign;
   QByteArray line;
   while (!text.isEmpty()) {
     if (!patchHeader.exactMatch(text.front())) {
-      throw QString("Invalid patch string: %1").arg(text.front().data());
+      throw QString("Invalid patch string: %1").arg(text.front());
     }
 
     patch = Patch();
@@ -2111,8 +2110,8 @@ QList<Patch> diff_match_patch::patch_fromText(const QByteArray &textline) {
         text.removeFirst();
         continue;
       }
-      sign = text.front()[0];
-      line = safeMid(text.front(), 1);
+      sign = text.front()[0].toAscii();
+      line = safeMid(text.front().toUtf8(), 1);
       line = line.replace("+", "%2B");  // decode would change all "+" to " "
       line = QByteArray::fromPercentEncoding(line);
       if (sign == '-') {
