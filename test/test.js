@@ -29,24 +29,6 @@ var DIFF_DELETE = -1;
 var DIFF_INSERT = 1;
 var DIFF_EQUAL = 0;
 
-function assertEquals(msg, expected, actual) {
-  if (typeof actual == 'undefined') {
-    // msg is optional.
-    actual = expected;
-    expected = msg;
-    msg = 'Expected: \'' + expected + '\' Actual: \'' + actual + '\'';
-  }
-  if (expected === actual) {
-    document.write('<FONT COLOR="#009900">Ok</FONT><BR>');
-    test_good++;
-  } else {
-    document.write('<FONT COLOR="#990000"><BIG>Fail!</BIG></FONT><BR>');
-    msg = msg.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    document.write('<code>' + msg + '</code><BR>');
-    test_bad++;
-  }
-}
-
 function assertEquals(msg, v1, v2) {
   if (typeof v2 == 'undefined') {
     // msg is optional.
@@ -54,6 +36,10 @@ function assertEquals(msg, v1, v2) {
     expected = msg;
     msg = 'Expected: \'' + v2 + '\' Actual: \'' + v1 + '\'';
   }
+  v1 = JSON.stringify(v1);
+  v2 = JSON.stringify(v2);
+  console.log(v1);
+  console.log(v2);
   assert.equal(v1, v2, msg);
 }
 
@@ -94,6 +80,8 @@ function assertEquivalent(msg, expected, actual) {
 
 // Are a and b the equivalent? -- Recursive.
 function _equivalent(a, b) {
+  var p;
+
   if (a == b) {
     return true;
   }
@@ -101,12 +89,12 @@ function _equivalent(a, b) {
     if (a.toString() != b.toString()) {
       return false;
     }
-    for (var p in a) {
+    for (p in a) {
       if (!_equivalent(a[p], b[p])) {
         return false;
       }
     }
-    for (var p in b) {
+    for (p in b) {
       if (!_equivalent(a[p], b[p])) {
         return false;
       }
@@ -187,6 +175,11 @@ function testPatchApply() {
   var results = dmp.patch_apply(patches, 'Hello world.');
   assertEquivalent(['Hello world.', []], results);
 
+  // Null case, buffer.
+  var patches = dmp.patch_make('', '');
+  var results = dmp.patch_apply(patches, new Buffer('Hello world.'));
+  assertEquivalent([new Buffer('Hello world.'), []], results);
+
   // Exact match.
   patches = dmp.patch_make('The quick brown fox jumps over the lazy dog.', 'That quick brown fox jumped over a lazy dog.');
   results = dmp.patch_apply(patches, 'The quick brown fox jumps over the lazy dog.');
@@ -211,20 +204,26 @@ function testPatchApply() {
   assertEquivalent(['xabc12345678901234567890---------------++++++++++---------------12345678901234567890y', [false, true]], results);
 
   // Big delete, big change 2.
-  dmp.Patch_DeleteThreshold = 0.6;
+  // dmp.Patch_DeleteThreshold = 0.6;
+  dmp.set_Patch_DeleteThreshold(0.6);
   patches = dmp.patch_make('x1234567890123456789012345678901234567890123456789012345678901234567890y', 'xabcy');
   results = dmp.patch_apply(patches, 'x12345678901234567890---------------++++++++++---------------12345678901234567890y');
   assertEquivalent(['xabcy', [true, true]], results);
-  dmp.Patch_DeleteThreshold = 0.5;
+  // dmp.Patch_DeleteThreshold = 0.5;
+  dmp.set_Patch_DeleteThreshold(0.5);
 
   // Compensate for failed patch.
-  dmp.Match_Threshold = 0.0;
-  dmp.Match_Distance = 0;
+  // dmp.Match_Threshold = 0.0;
+  // dmp.Match_Distance = 0;
+  dmp.set_Match_Threshold(0.0);
+  dmp.set_Match_Distance(0);
   patches = dmp.patch_make('abcdefghijklmnopqrstuvwxyz--------------------1234567890', 'abcXXXXXXXXXXdefghijklmnopqrstuvwxyz--------------------1234567YYYYYYYYYY890');
   results = dmp.patch_apply(patches, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ--------------------1234567890');
   assertEquivalent(['ABCDEFGHIJKLMNOPQRSTUVWXYZ--------------------1234567YYYYYYYYYY890', [false, true]], results);
-  dmp.Match_Threshold = 0.5;
-  dmp.Match_Distance = 1000;
+  // dmp.Match_Threshold = 0.5;
+  // dmp.Match_Distance = 1000;
+  dmp.set_Match_Threshold(0.5);
+  dmp.set_Match_Distance(1000);
 
   // No side effects.
   patches = dmp.patch_make('', 'test');
