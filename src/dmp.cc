@@ -23,7 +23,7 @@ Handle<Value> PatchMake(const Arguments& args) {
   QString text1;
   QString text2;
 
-  if (args.Length() < 2) {
+  if (args.Length() != 2) {
     ThrowException(Exception::TypeError(String::New("Wrong number of arguments. This function takes 2 arguments.")));
     return scope.Close(Undefined());
   }
@@ -71,7 +71,7 @@ Handle<Value> PatchApply(const Arguments& args) {
   QByteArray bytes;
   QString text;
 
-  if (args.Length() < 2) {
+  if (args.Length() != 2) {
     ThrowException(Exception::TypeError(String::New("Wrong number of arguments. This function takes 2 arguments.")));
     return scope.Close(Undefined());
   }
@@ -91,14 +91,24 @@ Handle<Value> PatchApply(const Arguments& args) {
     return scope.Close(Undefined());
   }
 
-  QString patch_text = QString::fromUtf16(*v8::String::Value(args[0]));
+  QString patch_text = QString::fromUtf16(*String::Value(args[0]));
   QList<Patch> patches = dmp.patch_fromText(patch_text);
 
   QPair<QString, QVector<bool> > result = dmp.patch_apply(patches, text);
 
+  Handle<Array> arr = Array::New(2);
+
+  Handle<Array> arr2 = Array::New(result.second.size());
+  for(int i = 0; i < result.second.size(); i++) {
+    arr2->Set(i, Boolean::New(result.second.at(i)));
+  }
+  arr->Set(1, arr2);
+
   // TODO: return results of the form ['That quick brown fox jumped over a lazy dog.', [true, true]]
   if (args[1]->IsString()) {
-    return scope.Close(String::New(result.first.utf16()));
+    Handle<String> text = String::New(result.first.utf16());
+    arr->Set(0, text);
+    return scope.Close(arr);
   }
 
   node::Buffer *slow_buffer = node::Buffer::New(result.first.toUtf8(), result.first.length());
@@ -106,15 +116,97 @@ Handle<Value> PatchApply(const Arguments& args) {
   // Turn slow buffer into fast buffer. Taken from http://luismreis.github.io/node-bindings-guide/docs/returning.html
   Local<Object> globalObj = Context::GetCurrent()->Global();
   Local<Function> bufferConstructor = Local<Function>::Cast(globalObj->Get(String::New("Buffer")));
-  Handle<Value> constructorArgs[3] = { slow_buffer->handle_, v8::Integer::New(node::Buffer::Length(slow_buffer)), v8::Integer::New(0) };
+  Handle<Value> constructorArgs[3] = { slow_buffer->handle_, Integer::New(node::Buffer::Length(slow_buffer)), Integer::New(0) };
   Local<Object> fast_buffer = bufferConstructor->NewInstance(3, constructorArgs);
 
-  return scope.Close(fast_buffer);
+  arr->Set(0, fast_buffer);
+
+  return scope.Close(arr);
+}
+
+/*
+string urlDecode(string &SRC) {
+    string ret;
+    char ch;
+    int i, ii;
+    for (i=0; i<SRC.length(); i++) {
+        if (int(SRC[i])==37) {
+            sscanf(SRC.substr(i+1,2).c_str(), "%x", &ii);
+            ch=static_cast<char>(ii);
+            ret+=ch;
+            i=i+2;
+        } else {
+            ret+=SRC[i];
+        }
+    }
+    return (ret);
+}
+*/
+
+Handle<Value> set_Patch_DeleteThreshold(const Arguments& args) {
+  HandleScope scope;
+  if (args.Length() != 1) {
+    ThrowException(Exception::TypeError(String::New("Wrong number of arguments. This function takes 1 argument.")));
+    return scope.Close(Undefined());
+  }
+
+  if (!args[0]->IsNumber()) {
+    ThrowException(Exception::TypeError(String::New("Wrong argument. This function takes a number.")));
+    return scope.Close(Undefined());
+  }
+
+  dmp.Patch_DeleteThreshold = args[0]->ToNumber()->Value();
+
+  return scope.Close(Undefined());
+}
+
+Handle<Value> set_Match_Threshold(const Arguments& args) {
+  HandleScope scope;
+  if (args.Length() != 1) {
+    ThrowException(Exception::TypeError(String::New("Wrong number of arguments. This function takes 1 argument.")));
+    return scope.Close(Undefined());
+  }
+
+  if (!args[0]->IsNumber()) {
+    ThrowException(Exception::TypeError(String::New("Wrong argument. This function takes a number.")));
+    return scope.Close(Undefined());
+  }
+
+  dmp.Match_Threshold = args[0]->ToNumber()->Value();
+
+  return scope.Close(Undefined());
+}
+
+Handle<Value> set_Match_Distance(const Arguments& args) {
+  HandleScope scope;
+  if (args.Length() != 1) {
+    ThrowException(Exception::TypeError(String::New("Wrong number of arguments. This function takes 1 argument.")));
+    return scope.Close(Undefined());
+  }
+
+  if (!args[0]->IsNumber()) {
+    ThrowException(Exception::TypeError(String::New("Wrong argument. This function takes a number.")));
+    return scope.Close(Undefined());
+  }
+
+  dmp.Match_Distance = args[0]->ToNumber()->Value();
+
+  return scope.Close(Undefined());
 }
 
 void init(Handle<Object> exports) {
   exports->Set(String::NewSymbol("patch_make"), FunctionTemplate::New(PatchMake)->GetFunction());
   exports->Set(String::NewSymbol("patch_apply"), FunctionTemplate::New(PatchApply)->GetFunction());
+
+  exports->Set(String::NewSymbol("set_Patch_DeleteThreshold"), FunctionTemplate::New(set_Patch_DeleteThreshold)->GetFunction());
+  exports->Set(String::NewSymbol("set_Match_Threshold"), FunctionTemplate::New(set_Match_Threshold)->GetFunction());
+  exports->Set(String::NewSymbol("set_Match_Distance"), FunctionTemplate::New(set_Match_Distance)->GetFunction());
+/*
+  dmp.Patch_DeleteThreshold = 0.6f;
+  dmp.Match_Threshold = 0.0;
+  dmp.Match_Distance = 0;
+
+ */
 }
 
 NODE_MODULE(dmp, init)
