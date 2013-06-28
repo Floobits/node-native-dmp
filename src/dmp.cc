@@ -22,39 +22,42 @@ Handle<Value> PatchMake(const Arguments& args) {
   QByteArray bytes2;
   QString text1;
   QString text2;
+  QList<Patch> patches;
 
   if (args.Length() != 2) {
     ThrowException(Exception::TypeError(String::New("Wrong number of arguments. This function takes 2 arguments.")));
     return scope.Close(Undefined());
   }
 
-  if (args[0]->IsString()) {
+  if (args[0]->IsString() && args[1]->IsString()) {
     text1 = QString::fromUtf16(*String::Value(args[0]));
     qDebug() << "text1" << text1 << text1.length() << "\n";
-  }
-  if (args[1]->IsString()) {
+
     text2 = QString::fromUtf16(*String::Value(args[1]));
     qDebug() << "text2" << text2 << text2.length() << "\n";
-  }
 
-  if (node::Buffer::HasInstance(args[0])) {
+    if (text1.isNull() || text2.isNull()) {
+      ThrowException(Exception::TypeError(String::New("Arguments must be buffers or strings.")));
+      return scope.Close(Undefined());
+    }
+
+    patches = dmp.patch_make(text1, text2);
+  } else if (node::Buffer::HasInstance(args[0]) && node::Buffer::HasInstance(args[1])) {
     bytes1 = QByteArray::fromRawData(node::Buffer::Data(args[0]), node::Buffer::Length(args[0]));
-    text1 = QString(bytes1);
-    qDebug() << "text1" << text1 << text1.length() << bytes1.length() << "\n";
-  }
+    qDebug() << "bytes1" << bytes1.length() << "\n";
 
-  if (node::Buffer::HasInstance(args[1])) {
     bytes2 = QByteArray::fromRawData(node::Buffer::Data(args[1]), node::Buffer::Length(args[1]));
-    text2 = QString(bytes2);
-    qDebug() << "text2" << text2 << text2.length() << bytes2.length() <<"\n";
-  }
+    qDebug() << "bytes2" << bytes2.length() <<"\n";
 
-  if (text1.isNull() || text2.isNull()) {
-    ThrowException(Exception::TypeError(String::New("Arguments must be buffers or strings.")));
+    if (bytes1.isNull() || bytes2.isNull()) {
+      ThrowException(Exception::TypeError(String::New("Arguments must be buffers or strings.")));
+      return scope.Close(Undefined());
+    }
+    patches = dmp.patch_make(bytes1, bytes2);
+  } else {
+    ThrowException(Exception::TypeError(String::New("Arguments must be 2 buffers or 2 strings.")));
     return scope.Close(Undefined());
   }
-
-  QList<Patch> patches = dmp.patch_make(text1, text2);
 
   QString patch_text = dmp.patch_toText(patches);
 
