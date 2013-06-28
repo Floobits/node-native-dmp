@@ -3,18 +3,13 @@
 #include <v8.h>
 
 #include <QtCore>
+#define QT_NO_DEBUG_OUTPUT
+
 #include "diff_match_patch.h"
+diff_match_patch dmp;
 
 using namespace v8;
 
-#include <stdlib.h>
-
-// #define QT_NO_CAST_FROM_ASCII 1
-
-diff_match_patch dmp;
-
-// patch_make (buf1, buf2) --> patch text
-// patch_apply (buf, patch_text) --> new buf
 
 Handle<Value> PatchMake(const Arguments& args) {
   HandleScope scope;
