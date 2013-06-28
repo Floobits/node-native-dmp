@@ -38,8 +38,6 @@ function assertEquals(msg, v1, v2) {
   }
   v1 = JSON.stringify(v1);
   v2 = JSON.stringify(v2);
-  console.log(v1);
-  console.log(v2);
   assert.equal(v1, v2, msg);
 }
 

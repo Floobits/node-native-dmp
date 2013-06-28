@@ -1,0 +1,4 @@
+#!/bin/bash
+
+node ./test/test.js && \
+./src/diff_match_patch
