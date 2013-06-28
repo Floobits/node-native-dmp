@@ -156,7 +156,7 @@ QString Patch::toString() {
         text += QString(' ');
         break;
     }
-    text += QString(QUrl::toPercentEncoding(aDiff.text, " !~*'();/?:@&=+$,#"))
+    text += QString(aDiff.text.toPercentEncoding(" !~*'();/?:@&=+$,#"))
         + QString("\n");
   }
 
@@ -1361,8 +1361,7 @@ QByteArray diff_match_patch::diff_toDelta(const QList<Diff> &diffs) {
   foreach(Diff aDiff, diffs) {
     switch (aDiff.operation) {
       case INSERT: {
-        QByteArray encoded = QByteArray(QUrl::toPercentEncoding(aDiff.text,
-            " !~*'();/?:@&=+$,#"));
+        QByteArray encoded = aDiff.text.toPercentEncoding(" !~*'();/?:@&=+$,#");
         text += QByteArray("+") + encoded + QByteArray("\t");
         break;
       }
@@ -1637,7 +1636,6 @@ void diff_match_patch::patch_addContext(Patch &patch, const QByteArray &text) {
 
 QList<Patch> diff_match_patch::patch_make(const QString &text1,
                                           const QString &text2) {
-  qDebug() << "BYTES!\n";
   // Check for null inputs.
   if (text1.isNull() || text2.isNull()) {
     throw "Null inputs. (patch_make)";
