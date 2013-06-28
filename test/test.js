@@ -176,8 +176,8 @@ function testPatchApply() {
   assertEquivalent(['Hello world.', []], results);
 
   // Null case, buffer.
-  var patches = dmp.patch_make('', '');
-  var results = dmp.patch_apply(patches, new Buffer('Hello world.'));
+  patches = dmp.patch_make('', '');
+  results = dmp.patch_apply(patches, new Buffer('Hello world.'));
   assertEquivalent([new Buffer('Hello world.'), []], results);
 
   // Exact match.
@@ -258,9 +258,13 @@ function testPatchApply() {
   assertEquivalent([new Buffer([1,2,3,4,5]), [true]], results);
 
   // Binary with null
-  patches = dmp.patch_make(new Buffer([1,2,3]), new Buffer([1,2,3,0,4,5]));
+  patches = dmp.patch_make(new Buffer([1,2,3]), new Buffer([1,2,3,0,128,4,255,5]));
+  console.log("patches");
+  console.log(JSON.stringify(patches));
+  console.log("patches");
   results = dmp.patch_apply(patches, new Buffer([1,2,3]));
-  assertEquivalent([new Buffer([1,2,3,0,4,5]), [true]], results);
+  console.log(JSON.stringify(results[0]));
+  assertEquivalent([new Buffer([1,2,3,0,128,4,255,5]), [true]], results);
 }
 
 testPatchMake();
