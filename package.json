@@ -1,5 +1,5 @@
 {
-  "name": "native-dmp",
+  "name": "native-diff-match-patch",
   "homepage": "https://github.com/Floobits/node-native-dmp",
   "repository": {
     "type": "git",
@@ -12,7 +12,8 @@
     "Matt Kaniaris <mkaniaris@gmail.com>",
     "Geoff Greer <geoff@greer.fm>"
   ],
-  "version": "0.0.1",
+  "version": "0.0.2",
+  "main": "./lib/dmp.js",
   "dependencies": {
   },
   "devDependencies": {
