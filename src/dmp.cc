@@ -82,10 +82,10 @@ Handle<Value> PatchApply(const Arguments& args) {
   if (args[1]->IsString()) {
     text = QString::fromUtf16(*String::Value(args[1]));
     bytes = text.toUtf8();
-    qDebug() << "text" << text << text.length() << bytes.length() <<"\n";
+    qDebug() << "text" << text << text.length() << bytes.length() << "\n";
   } else if (node::Buffer::HasInstance(args[1])) {
     bytes = QByteArray::fromRawData(node::Buffer::Data(args[1]), node::Buffer::Length(args[1]));
-    qDebug() << "text" << text << text.length() << bytes.length() <<"\n";
+    qDebug() << "bytes" << bytes.length() << "\n";
   } else {
     ThrowException(Exception::TypeError(String::New("Wrong arguments. Arguments should be a string followed by a string or buffer.")));
     return scope.Close(Undefined());
