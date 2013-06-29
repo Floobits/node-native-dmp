@@ -595,16 +595,13 @@ QByteArray diff_match_patch::diff_linesToCharsMunge(const QByteArray &text,
 
 void diff_match_patch::diff_charsToLines(QList<Diff> &diffs,
                                          const QStringList &lineArray) {
-  // Qt has no mutable foreach construct.
-  QMutableListIterator<Diff> i(diffs);
-  while (i.hasNext()) {
-    Diff &diff = i.next();
-    QByteArray text;
-    for (int y = 0; y < diff.text.length(); y++) {
-      text += lineArray.value(static_cast<ushort>(diff.text[y]));
-    }
-    diff.text = text;
+  QByteArrayList lineArray2;
+  foreach (QString line, lineArray) {
+    lineArray2 << line.toUtf8();
   }
+  qDebug() << lineArray2.length();
+
+  diff_charsToLines(diffs, lineArray2);
 }
 
 void diff_match_patch::diff_charsToLines(QList<Diff> &diffs,
@@ -615,7 +612,7 @@ void diff_match_patch::diff_charsToLines(QList<Diff> &diffs,
     Diff &diff = i.next();
     QByteArray text;
     for (int y = 0; y < diff.text.length(); y++) {
-      text += lineArray.value(static_cast<ushort>(diff.text[y]));
+      text += lineArray.value(diff.text[y]);
     }
     diff.text = text;
   }
