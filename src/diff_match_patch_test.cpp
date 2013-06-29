@@ -144,13 +144,15 @@ void diff_match_patch_test::testDiffHalfmatch() {
 
 void diff_match_patch_test::testDiffLinesToChars() {
   // Convert lines down to characters.
-  QStringList tmpVector;
+  QByteArrayList tmpVector;
   QList<QVariant> tmpVarList;
-  tmpVector.append("");
-  tmpVector.append("alpha\n");
-  tmpVector.append("beta\n");
-  tmpVarList << QVariant::fromValue(QString() + QChar((ushort)1) + QChar((ushort)2) + QChar((ushort)1));  //(("\u0001\u0002\u0001"));
-  tmpVarList << QVariant::fromValue(QString() + QChar((ushort)2) + QChar((ushort)1) + QChar((ushort)2));  // (("\u0002\u0001\u0002"));
+  tmpVector << "";
+  tmpVector << "alpha\n";
+  tmpVector << "beta\n";
+  tmpVarList << QVariant::fromValue(QByteArray("\x01\x02\x01"));  //(("\u0001\u0002\u0001"));
+  tmpVarList << QVariant::fromValue(QByteArray("\x02\x01\x02"));  // (("\u0002\u0001\u0002"));
+  // tmpVarList << QVariant::fromValue(QString() + QChar((ushort)1) + QChar((ushort)2) + QChar((ushort)1));  //(("\u0001\u0002\u0001"));
+  // tmpVarList << QVariant::fromValue(QString() + QChar((ushort)2) + QChar((ushort)1) + QChar((ushort)2));  // (("\u0002\u0001\u0002"));
   tmpVarList << QVariant::fromValue(tmpVector);
   assertEquals("diff_linesToChars:", tmpVarList, dmp.diff_linesToChars("alpha\nbeta\nalpha\n", "beta\nalpha\nbeta\n"));
 
@@ -182,7 +184,7 @@ void diff_match_patch_test::testDiffLinesToChars() {
   QString lines;
   QString chars;
   for (int x = 1; x < n + 1; x++) {
-    tmpVector.append(QString::number(x) + "\n");
+    tmpVector.append(QString::number(x).toUtf8() + "\n");
     lines += QString::number(x) + "\n";
     chars += QChar(static_cast<ushort>(x));
   }
@@ -1004,21 +1006,38 @@ void diff_match_patch_test::assertEquals(const QString &strCase, const QList<Dif
   }
   qDebug("%s OK", qPrintable(strCase));
 }
+#include <string.h>
 
 void diff_match_patch_test::assertEquals(const QString &strCase, const QList<QVariant> &list1, const QList<QVariant> &list2) {
   bool fail = false;
-  if (list1.count() == list2.count()) {
-    int i = 0;
-    foreach(QVariant q1, list1) {
-      QVariant q2 = list2.value(i);
-      if (q1 != q2) {
+
+  if (list1.count() != list2.count()) {
+    qDebug("count %d %d", list1.count(), list2.count());
+    fail = true;
+  } else {
+    for (int i =0; i<list1.count(); i++){
+      qDebug("type %s %s", list1.value(i).typeName(), list2.value(i).typeName());
+
+      QByteArrayList q1 = list1.value(i).value<QByteArrayList>();
+      QByteArrayList q2 = list2.value(i).value<QByteArrayList>();
+
+      if ( q1.length() != q2.length()){
         fail = true;
         break;
       }
-      i++;
+
+      for (int j=0; j<q1.length(); j++){
+        if (q1[j] != q2[j]){
+          qDebug("OMG Q1 %s is not the same as Q2 %s", qPrintable(q1[j].data()), qPrintable(q2[j].data()));
+
+          fail = true;
+          break;
+        }
+      }
+      if (fail){
+        break;
+      }
     }
-  } else {
-    fail = true;
   }
 
   if (fail) {
@@ -1105,7 +1124,7 @@ void diff_match_patch_test::assertEquals(const QString &strCase, const QStringLi
   for (int i = 0; i < list1.length(); i++) {
     if (list1[i].toUtf8() != list2[i]) {
       // TODO: print expected and actual
-      qDebug("%s FAIL\nExpected: %s\nActual:", qPrintable(strCase),
+      qDebug("%s FAIL\nExpected: %s\nActual: LOL", qPrintable(strCase),
           qPrintable(list1.join(",")));
       throw strCase;
     }
@@ -1116,7 +1135,7 @@ void diff_match_patch_test::assertEquals(const QString &strCase, const QStringLi
 void diff_match_patch_test::assertEquals(const QString &strCase, const QByteArrayList &list1, const QByteArrayList &list2) {
   if (list1 != list2) {
     // TODO: print expected and actual
-    qDebug("%s FAIL\nExpected:\nActual:", qPrintable(strCase));
+    qDebug("%s FAIL\nExpected:\nActual: LOL", qPrintable(strCase));
     throw strCase;
   }
   qDebug("%s OK", qPrintable(strCase));
