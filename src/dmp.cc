@@ -26,10 +26,10 @@ Handle<Value> PatchMake(const Arguments& args) {
 
   if (args[0]->IsString() && args[1]->IsString()) {
     text1 = QString::fromUtf16(*String::Value(args[0]));
-    qDebug() << "text1" << text1 << text1.length() << "\n";
+    // qDebug() << "text1" << text1 << text1.length() << "\n";
 
     text2 = QString::fromUtf16(*String::Value(args[1]));
-    qDebug() << "text2" << text2 << text2.length() << "\n";
+    // qDebug() << "text2" << text2 << text2.length() << "\n";
 
     if (text1.isNull() || text2.isNull()) {
       ThrowException(Exception::TypeError(String::New("Arguments must be buffers or strings.")));
@@ -39,10 +39,10 @@ Handle<Value> PatchMake(const Arguments& args) {
     patches = dmp.patch_make(text1, text2);
   } else if (node::Buffer::HasInstance(args[0]) && node::Buffer::HasInstance(args[1])) {
     bytes1 = QByteArray::fromRawData(node::Buffer::Data(args[0]), node::Buffer::Length(args[0]));
-    qDebug() << "bytes1" << bytes1.length() << "\n";
+    // qDebug() << "bytes1" << bytes1.length() << "\n";
 
     bytes2 = QByteArray::fromRawData(node::Buffer::Data(args[1]), node::Buffer::Length(args[1]));
-    qDebug() << "bytes2" << bytes2.length() <<"\n";
+    // qDebug() << "bytes2" << bytes2.length() <<"\n";
 
     if (bytes1.isNull() || bytes2.isNull()) {
       ThrowException(Exception::TypeError(String::New("Arguments must be buffers or strings.")));
@@ -56,10 +56,10 @@ Handle<Value> PatchMake(const Arguments& args) {
 
   QString patch_text = dmp.patch_toText(patches);
 
-  qDebug() << "patch text:" << patch_text << "\n";
+  // qDebug() << "patch text:" << patch_text << "\n";
 
   Handle<String> str = String::New(patch_text.utf16());
-  qDebug() << "v8 str:" << QString::fromUtf16(*String::Value(str)) << "\n";
+  // qDebug() << "v8 str:" << QString::fromUtf16(*String::Value(str)) << "\n";
 
   return scope.Close(str);
 }
@@ -77,10 +77,10 @@ Handle<Value> PatchApply(const Arguments& args) {
   if (args[1]->IsString()) {
     text = QString::fromUtf16(*String::Value(args[1]));
     bytes = text.toUtf8();
-    qDebug() << "text" << text << text.length() << bytes.length() << "\n";
+    // qDebug() << "text" << text << text.length() << bytes.length() << "\n";
   } else if (node::Buffer::HasInstance(args[1])) {
     bytes = QByteArray::fromRawData(node::Buffer::Data(args[1]), node::Buffer::Length(args[1]));
-    qDebug() << "bytes" << bytes.length() << "\n";
+    // qDebug() << "bytes" << bytes.length() << "\n";
   } else {
     ThrowException(Exception::TypeError(String::New("Wrong arguments. Arguments should be a string followed by a string or buffer.")));
     return scope.Close(Undefined());
