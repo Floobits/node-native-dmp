@@ -29,7 +29,6 @@
   },
   "scripts": {
     "test": "./test/run_tests",
-    "preinstall": "node-gyp clean || (exit 0); node-gyp configure build",
     "install": "node-gyp rebuild"
   },
   "licenses": [
