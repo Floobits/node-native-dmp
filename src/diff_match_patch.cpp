@@ -599,7 +599,7 @@ void diff_match_patch::diff_charsToLines(QList<Diff> &diffs,
   foreach (QString line, lineArray) {
     lineArray2 << line.toUtf8();
   }
-  qDebug() << lineArray2.length();
+  //qDebug() << lineArray2.length();
 
   diff_charsToLines(diffs, lineArray2);
 }
