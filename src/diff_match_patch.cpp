@@ -1543,7 +1543,7 @@ int diff_match_patch::match_bitap(const QByteArray &text, const QByteArray &patt
 
   int bin_min, bin_mid;
   int bin_max = pattern.length() + text.length();
-  int *rd;
+  int *rd = NULL;
   int *last_rd = NULL;
   for (int d = 0; d < pattern.length(); d++) {
     // Scan for the best match; each iteration allows for one more error.
@@ -1609,7 +1609,9 @@ int diff_match_patch::match_bitap(const QByteArray &text, const QByteArray &patt
     delete [] last_rd;
     last_rd = rd;
   }
-  delete [] last_rd;
+  if (last_rd != rd) {
+    delete [] last_rd;
+  }
   delete [] rd;
   return best_loc;
 }
