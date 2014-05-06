@@ -75,13 +75,17 @@ function _equivalent(a, b) {
       return false;
     }
     for (p in a) {
-      if (!_equivalent(a[p], b[p])) {
-        return false;
+      if (a.hasOwnProperty(p)) {
+        if (!_equivalent(a[p], b[p])) {
+          return false;
+        }
       }
     }
     for (p in b) {
-      if (!_equivalent(a[p], b[p])) {
-        return false;
+      if (b.hasOwnProperty(p)) {
+        if (!_equivalent(a[p], b[p])) {
+          return false;
+        }
       }
     }
     return true;
@@ -175,7 +179,8 @@ function testPatchApply() {
   var patches,
     results,
     patchstr,
-    kanji,
+    kanji1,
+    kanji2,
     staging_buf,
     our_buf;
   dmp.Match_Distance = 1000;
@@ -277,8 +282,19 @@ function testPatchApply() {
   console.log(JSON.stringify(results[0]));
   assertEquivalent([new Buffer([1, 2, 3, 0, 128, 4, 255, 5]), [true]], results);
 
-  kanji = new Buffer("㲷㲷㲷㲷㲷㲷㲷㲷\n㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷\n㲷");
-  // TODO: use kanji
+  kanji1 = new Buffer("㲷㲷㲷㲷㲷㲷㲷㲷\n㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷\n㲷");
+  kanji2 = new Buffer("㲷㲷㲷㲷㲷㲷㲷㲷\n㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷\n㲷");
+  patches = dmp.patch_make(kanji1, kanji2);
+  console.log("patches");
+  console.log(JSON.stringify(patches));
+  try {
+    decodeURI(patches);
+  } catch (e) {
+    console.error("");
+    console.error("Error calling decodeURI on kanji:", e);
+    console.error("");
+  }
+
   staging_buf = new Buffer([227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 10, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 10, 227, 178, 183]);
   our_buf =     new Buffer([227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 10, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 10, 227, 178, 183, 227, 178, 183]);
   patches = dmp.patch_make(staging_buf, our_buf);
