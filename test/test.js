@@ -1,3 +1,5 @@
+/*global expected: true */
+
 /**
  * Test Harness for Diff Match and Patch
  *
@@ -30,7 +32,7 @@ var DIFF_INSERT = 1;
 var DIFF_EQUAL = 0;
 
 function assertEquals(msg, v1, v2) {
-  if (typeof v2 == 'undefined') {
+  if (v2 === undefined) {
     // msg is optional.
     v2 = v1;
     expected = msg;
@@ -42,7 +44,7 @@ function assertEquals(msg, v1, v2) {
 }
 
 function assertTrue(msg, actual) {
-  if (typeof actual == 'undefined') {
+  if (actual === undefined) {
     // msg is optional.
     actual = msg;
     assertEquals(true, actual);
@@ -52,7 +54,7 @@ function assertTrue(msg, actual) {
 }
 
 function assertFalse(msg, actual) {
-  if (typeof actual == 'undefined') {
+  if (actual === undefined) {
     // msg is optional.
     actual = msg;
     assertEquals(false, actual);
@@ -61,30 +63,15 @@ function assertFalse(msg, actual) {
   }
 }
 
-// If expected and actual are the equivalent, pass the test.
-function assertEquivalent(msg, expected, actual) {
-  if (typeof actual == 'undefined') {
-    // msg is optional.
-    actual = expected;
-    expected = msg;
-    msg = 'Expected: \'' + expected + '\' Actual: \'' + actual + '\'';
-  }
-  if (_equivalent(expected, actual)) {
-    assertEquals(msg, String.toString(expected), String.toString(actual));
-  } else {
-    assertEquals(msg, expected, actual);
-  }
-}
-
 // Are a and b the equivalent? -- Recursive.
 function _equivalent(a, b) {
   var p;
 
-  if (a == b) {
+  if (a === b) {
     return true;
   }
-  if (typeof a == 'object' && typeof b == 'object' && a !== null && b !== null) {
-    if (a.toString() != b.toString()) {
+  if (typeof a === 'object' && typeof b === 'object' && a !== null && b !== null) {
+    if (a.toString() !== b.toString()) {
       return false;
     }
     for (p in a) {
@@ -102,16 +89,31 @@ function _equivalent(a, b) {
   return false;
 }
 
+// If expected and actual are the equivalent, pass the test.
+function assertEquivalent(msg, expected, actual) {
+  if (actual === undefined) {
+    // msg is optional.
+    actual = expected;
+    expected = msg;
+    msg = 'Expected: \'' + expected + '\' Actual: \'' + actual + '\'';
+  }
+  if (_equivalent(expected, actual)) {
+    assertEquals(msg, String.toString(expected), String.toString(actual));
+  } else {
+    assertEquals(msg, expected, actual);
+  }
+}
 
 function diff_rebuildtexts(diffs) {
   // Construct the two texts which made up the diff originally.
-  var text1 = '';
-  var text2 = '';
-  for (var x = 0; x < diffs.length; x++) {
-    if (diffs[x][0] != DIFF_INSERT) {
+  var text1 = '',
+    text2 = '',
+    x;
+  for (x = 0; x < diffs.length; x++) {
+    if (diffs[x][0] !== DIFF_INSERT) {
       text1 += diffs[x][1];
     }
-    if (diffs[x][0] != DIFF_DELETE) {
+    if (diffs[x][0] !== DIFF_DELETE) {
       text2 += diffs[x][1];
     }
   }
@@ -120,14 +122,19 @@ function diff_rebuildtexts(diffs) {
 
 
 function testPatchMake() {
+  var patches,
+    text1,
+    text2,
+    expectedPatch,
+    x;
   // Null case.
-  var patches = dmp.patch_make('', '');
+  patches = dmp.patch_make('', '');
   assertEquals('', patches);
 
-  var text1 = 'The quick brown fox jumps over the lazy dog.';
-  var text2 = 'That quick brown fox jumped over a lazy dog.';
+  text1 = 'The quick brown fox jumps over the lazy dog.';
+  text2 = 'That quick brown fox jumped over a lazy dog.';
   // Text2+Text1 inputs.
-  var expectedPatch = '@@ -1,8 +1,7 @@\n Th\n-at\n+e\n  qui\n@@ -21,17 +21,18 @@\n jump\n-ed\n+s\n  over \n-a\n+the\n  laz\n';
+  expectedPatch = '@@ -1,8 +1,7 @@\n Th\n-at\n+e\n  qui\n@@ -21,17 +21,18 @@\n jump\n-ed\n+s\n  over \n-a\n+the\n  laz\n';
   // The second patch must be "-21,17 +21,18", not "-22,17 +21,18" due to rolling context.
   patches = dmp.patch_make(text2, text1);
   assertEquals(expectedPatch, patches);
@@ -147,7 +154,7 @@ function testPatchMake() {
 
   // Long string with repeats.
   text1 = '';
-  for (var x = 0; x < 100; x++) {
+  for (x = 0; x < 100; x++) {
     text1 += 'abcdef';
   }
   text2 = text1 + '123';
@@ -159,18 +166,24 @@ function testPatchMake() {
   try {
     dmp.patch_make(null);
     assertEquals(Error, null);
-  } catch (e) {
+  } catch (ignore) {
     // Exception expected.
   }
 }
 
 function testPatchApply() {
+  var patches,
+    results,
+    patchstr,
+    kanji,
+    staging_buf,
+    our_buf;
   dmp.Match_Distance = 1000;
   dmp.Match_Threshold = 0.5;
   dmp.Patch_DeleteThreshold = 0.5;
   // Null case.
-  var patches = dmp.patch_make('', '');
-  var results = dmp.patch_apply(patches, 'Hello world.');
+  patches = dmp.patch_make('', '');
+  results = dmp.patch_apply(patches, 'Hello world.');
   assertEquivalent(['Hello world.', []], results);
 
   // Null case, buffer.
@@ -225,7 +238,7 @@ function testPatchApply() {
 
   // No side effects.
   patches = dmp.patch_make('', 'test');
-  var patchstr = patches;
+  patchstr = patches;
   dmp.patch_apply(patches, '');
   assertEquals(patchstr, patches);
 
@@ -251,26 +264,27 @@ function testPatchApply() {
   assertEquivalent(['x123', [true]], results);
 
   // Binary
-  patches = dmp.patch_make(new Buffer([1,2,3]), new Buffer([1,2,3,4,5]));
-  results = dmp.patch_apply(patches, new Buffer([1,2,3]));
-  assertEquivalent([new Buffer([1,2,3,4,5]), [true]], results);
+  patches = dmp.patch_make(new Buffer([1, 2, 3]), new Buffer([1, 2, 3, 4, 5]));
+  results = dmp.patch_apply(patches, new Buffer([1, 2, 3]));
+  assertEquivalent([new Buffer([1, 2, 3, 4, 5]), [true]], results);
 
   // Binary with null
-  patches = dmp.patch_make(new Buffer([1,2,3]), new Buffer([1,2,3,0,128,4,255,5]));
+  patches = dmp.patch_make(new Buffer([1, 2, 3]), new Buffer([1, 2, 3, 0, 128, 4, 255, 5]));
   console.log("patches");
   console.log(JSON.stringify(patches));
   console.log("patches");
-  results = dmp.patch_apply(patches, new Buffer([1,2,3]));
+  results = dmp.patch_apply(patches, new Buffer([1, 2, 3]));
   console.log(JSON.stringify(results[0]));
-  assertEquivalent([new Buffer([1,2,3,0,128,4,255,5]), [true]], results);
+  assertEquivalent([new Buffer([1, 2, 3, 0, 128, 4, 255, 5]), [true]], results);
 
-  var kanji = new Buffer("㲷㲷㲷㲷㲷㲷㲷㲷\n㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷\n㲷");
-  var staging_buf = new Buffer([227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,10,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,10,227,178,183]);
-  var our_buf =     new Buffer([227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,10,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,227,178,183,10,227,178,183,227,178,183]);
+  kanji = new Buffer("㲷㲷㲷㲷㲷㲷㲷㲷\n㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷㲷\n㲷");
+  // TODO: use kanji
+  staging_buf = new Buffer([227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 10, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 10, 227, 178, 183]);
+  our_buf =     new Buffer([227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 10, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 227, 178, 183, 10, 227, 178, 183, 227, 178, 183]);
   patches = dmp.patch_make(staging_buf, our_buf);
   console.log("patches");
   console.log(JSON.stringify(patches));
-  p = "@@ -19,16 +19,17 @@";
+// p = "@@ -19,16 +19,17 @@";
 // <
 // <  %E3%B2%B7%E3%B2%B7%E3%B2%B7%E3%B2%B7%E3%B2%B7%E3%B2%B7%E3%B2%B7%E3%B2%B7%E3%B2%B7%E3%B2%B7%E3%B2%B7%E3%B2%B7%E3%B2%B7%E3%B2%B7%0A%E3%B2%B7
 // < +a
