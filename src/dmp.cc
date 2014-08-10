@@ -11,8 +11,9 @@ diff_match_patch dmp;
 using namespace v8;
 
 
-Handle<Value> PatchMake(const Arguments& args) {
-  HandleScope scope;
+void PatchMake(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   QByteArray bytes1;
   QByteArray bytes2;
   QString text1;
@@ -20,8 +21,9 @@ Handle<Value> PatchMake(const Arguments& args) {
   QList<Patch> patches;
 
   if (args.Length() != 2) {
-    ThrowException(Exception::TypeError(String::New("Wrong number of arguments. This function takes 2 arguments.")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong number of arguments. This function takes 2 arguments.")));
+    args.GetReturnValue().Set(Undefined(isolate));
+    return;
   }
 
   if (args[0]->IsString() && args[1]->IsString()) {
@@ -32,8 +34,9 @@ Handle<Value> PatchMake(const Arguments& args) {
     // qDebug() << "text2" << text2 << text2.length() << "\n";
 
     if (text1.isNull() || text2.isNull()) {
-      ThrowException(Exception::TypeError(String::New("Arguments must be buffers or strings.")));
-      return scope.Close(Undefined());
+      isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Arguments must be buffers or strings.")));
+      args.GetReturnValue().Set(Undefined(isolate));
+      return;
     }
 
     patches = dmp.patch_make(text1, text2);
@@ -45,33 +48,37 @@ Handle<Value> PatchMake(const Arguments& args) {
     // qDebug() << "bytes2" << bytes2.length() <<"\n";
 
     if (bytes1.isNull() || bytes2.isNull()) {
-      ThrowException(Exception::TypeError(String::New("Arguments must be buffers or strings.")));
-      return scope.Close(Undefined());
+      isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Arguments must be buffers or strings.")));
+      args.GetReturnValue().Set(Undefined(isolate));
+      return;
     }
     patches = dmp.patch_make(bytes1, bytes2);
   } else {
-    ThrowException(Exception::TypeError(String::New("Arguments must be 2 buffers or 2 strings.")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Arguments must be 2 buffers or 2 strings.")));
+    args.GetReturnValue().Set(Undefined(isolate));
+    return;
   }
 
   QString patch_text = dmp.patch_toText(patches);
 
   // qDebug() << "patch text:" << patch_text << "\n";
 
-  Handle<String> str = String::New(patch_text.utf16());
+  Handle<String> str = String::NewFromUtf8(isolate, patch_text.toUtf8());
   // qDebug() << "v8 str:" << QString::fromUtf16(*String::Value(str)) << "\n";
 
-  return scope.Close(str);
+  args.GetReturnValue().Set(str);
 }
 
-Handle<Value> PatchApply(const Arguments& args) {
-  HandleScope scope;
+void PatchApply(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   QByteArray bytes;
   QString text;
 
   if (args.Length() != 2) {
-    ThrowException(Exception::TypeError(String::New("Wrong number of arguments. This function takes 2 arguments.")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong number of arguments. This function takes 2 arguments.")));
+    args.GetReturnValue().Set(Undefined(isolate));
+    return;
   }
 
   if (args[1]->IsString()) {
@@ -82,8 +89,9 @@ Handle<Value> PatchApply(const Arguments& args) {
     bytes = QByteArray::fromRawData(node::Buffer::Data(args[1]), node::Buffer::Length(args[1]));
     // qDebug() << "bytes" << bytes.length() << "\n";
   } else {
-    ThrowException(Exception::TypeError(String::New("Wrong arguments. Arguments should be a string followed by a string or buffer.")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong arguments. Arguments should be a string followed by a string or buffer.")));
+    args.GetReturnValue().Set(Undefined(isolate));
+    return;
   }
 
   QString patch_text = QString::fromUtf16(*String::Value(args[0]));
@@ -91,92 +99,101 @@ Handle<Value> PatchApply(const Arguments& args) {
 
   QPair<QByteArray, QVector<bool> > result = dmp.patch_apply(patches, bytes);
 
-  Handle<Array> arr = Array::New(2);
+  Handle<Array> arr = Array::New(isolate, 2);
 
-  Handle<Array> arr2 = Array::New(result.second.size());
+  Handle<Array> arr2 = Array::New(isolate, result.second.size());
   for(int i = 0; i < result.second.size(); i++) {
-    arr2->Set(i, Boolean::New(result.second.at(i)));
+    arr2->Set(i, Boolean::New(isolate, result.second.at(i)));
   }
   arr->Set(1, arr2);
 
   // TODO: return results of the form ['That quick brown fox jumped over a lazy dog.', [true, true]]
   if (args[1]->IsString()) {
-    Handle<String> text = String::New(result.first);
+    Handle<String> text = String::NewFromUtf8(isolate, result.first);
     arr->Set(0, text);
-    return scope.Close(arr);
+    args.GetReturnValue().Set(arr);
+    return;
   }
 
-  node::Buffer *slow_buffer = node::Buffer::New(result.first, result.first.length());
+  // node::Buffer *slow_buffer = node::Buffer::New(isolate, result.first, result.first.length());
 
   // Turn slow buffer into fast buffer. Taken from http://luismreis.github.io/node-bindings-guide/docs/returning.html
-  Local<Object> globalObj = Context::GetCurrent()->Global();
-  Local<Function> bufferConstructor = Local<Function>::Cast(globalObj->Get(String::New("Buffer")));
-  Handle<Value> constructorArgs[3] = { slow_buffer->handle_, Integer::New(node::Buffer::Length(slow_buffer)), Integer::New(0) };
-  Local<Object> fast_buffer = bufferConstructor->NewInstance(3, constructorArgs);
+  // Local<Object> globalObj = Context::GetCurrent()->Global();
+  // Local<Function> bufferConstructor = Local<Function>::Cast(globalObj->Get(String::NewFromUtf8(isolate, "Buffer")));
+  // Handle<Value> constructorArgs[3] = { slow_buffer->handle_, Integer::New(isolate, node::Buffer::Length(slow_buffer)), Integer::New(isolate, 0) };
+  // Local<Object> fast_buffer = bufferConstructor->NewInstance(3, constructorArgs);
 
-  arr->Set(0, fast_buffer);
+  arr->Set(0, node::Buffer::New(isolate, result.first, result.first.length()));
 
-  return scope.Close(arr);
+  args.GetReturnValue().Set(arr);
+  return;
 }
 
-Handle<Value> set_Patch_DeleteThreshold(const Arguments& args) {
-  HandleScope scope;
+void set_Patch_DeleteThreshold(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   if (args.Length() != 1) {
-    ThrowException(Exception::TypeError(String::New("Wrong number of arguments. This function takes 1 argument.")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong number of arguments. This function takes 1 argument.")));
+    args.GetReturnValue().Set(Undefined(isolate));
+    return;
   }
 
   if (!args[0]->IsNumber()) {
-    ThrowException(Exception::TypeError(String::New("Wrong argument. This function takes a number.")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong argument. This function takes a number.")));
+    args.GetReturnValue().Set(Undefined(isolate));
+    return;
   }
 
   dmp.Patch_DeleteThreshold = args[0]->ToNumber()->Value();
-
-  return scope.Close(Undefined());
+  args.GetReturnValue().Set(Undefined(isolate));
 }
 
-Handle<Value> set_Match_Threshold(const Arguments& args) {
-  HandleScope scope;
+void set_Match_Threshold(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   if (args.Length() != 1) {
-    ThrowException(Exception::TypeError(String::New("Wrong number of arguments. This function takes 1 argument.")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong number of arguments. This function takes 1 argument.")));
+    args.GetReturnValue().Set(Undefined(isolate));
+    return;
   }
 
   if (!args[0]->IsNumber()) {
-    ThrowException(Exception::TypeError(String::New("Wrong argument. This function takes a number.")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong argument. This function takes a number.")));
+    args.GetReturnValue().Set(Undefined(isolate));
+    return;
   }
 
   dmp.Match_Threshold = args[0]->ToNumber()->Value();
-
-  return scope.Close(Undefined());
+  args.GetReturnValue().Set(Undefined(isolate));
+  return;
 }
 
-Handle<Value> set_Match_Distance(const Arguments& args) {
-  HandleScope scope;
+void set_Match_Distance(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   if (args.Length() != 1) {
-    ThrowException(Exception::TypeError(String::New("Wrong number of arguments. This function takes 1 argument.")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong number of arguments. This function takes 1 argument.")));
+    args.GetReturnValue().Set(Undefined(isolate));
+    return;
   }
 
   if (!args[0]->IsNumber()) {
-    ThrowException(Exception::TypeError(String::New("Wrong argument. This function takes a number.")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong argument. This function takes a number.")));
+    args.GetReturnValue().Set(Undefined(isolate));
+    return;
   }
 
   dmp.Match_Distance = args[0]->ToNumber()->Value();
-
-  return scope.Close(Undefined());
+  args.GetReturnValue().Set(Undefined(isolate));
 }
 
 void init(Handle<Object> exports) {
-  exports->Set(String::NewSymbol("patch_make"), FunctionTemplate::New(PatchMake)->GetFunction());
-  exports->Set(String::NewSymbol("patch_apply"), FunctionTemplate::New(PatchApply)->GetFunction());
+  NODE_SET_METHOD(exports, "patch_make", PatchMake);
+  NODE_SET_METHOD(exports, "patch_apply", PatchApply);
 
-  exports->Set(String::NewSymbol("set_Patch_DeleteThreshold"), FunctionTemplate::New(set_Patch_DeleteThreshold)->GetFunction());
-  exports->Set(String::NewSymbol("set_Match_Threshold"), FunctionTemplate::New(set_Match_Threshold)->GetFunction());
-  exports->Set(String::NewSymbol("set_Match_Distance"), FunctionTemplate::New(set_Match_Distance)->GetFunction());
+  NODE_SET_METHOD(exports, "set_Patch_DeleteThreshold", set_Patch_DeleteThreshold);
+  NODE_SET_METHOD(exports, "set_Match_Threshold", set_Match_Threshold);
+  NODE_SET_METHOD(exports, "set_Match_Distance", set_Match_Distance);
 }
 
 NODE_MODULE(dmp, init)
