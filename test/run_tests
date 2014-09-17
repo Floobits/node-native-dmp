@@ -1,4 +1,5 @@
 #!/bin/bash
 
+node ./test/patch_make.js && \
 node ./test/test.js && \
 ./build/Release/dmp-test

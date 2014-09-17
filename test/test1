@@ -1,0 +1,189 @@
+/** @jsx React.DOM */
+/*global $, _, React */
+/** @fileOverview The UI for the userlist. */
+"use strict";
+
+var Connection, UserView, UserlistView, VideoThumbnailView,
+  flux = require('../flux'),
+  modal = require("../mixins/modal"),
+  PermissionView = require("./permission_view"),
+  editorAction = require("./editor_action"),
+  mixins = require("../mixins/popover");
+
+VideoThumbnailView = React.createClass({
+  render: function() {
+    return (
+      <div></div>
+    );
+  }
+});
+/**
+ * @constructor
+ */
+Connection = React.createClass({
+  componentName: "Connection",
+  mixins: [mixins.PopoverMixin],
+  getInitialState: function () {
+    return {
+      showPopover: false,
+    };
+  },
+  kick_: function () {
+    editorAction.kick(this.props.connection.id);
+  },
+  followUser_: function () {
+    editorAction.follow(this.props.connection.id);
+  },
+  /** @inheritDoc */
+  render: function () {
+    var connection = this.props.connection;
+    return (
+      <div className="client-list-item" onMouseLeave={this.handleMouseLeave} onClick={this.handleClick} onMouseEnter={this.handleMouseEnter}>
+        {new <VideoThumbnailView connection={connection} />}
+        <div className="dropdown">
+          <span>{connection.client}</span>
+          <span className="pull-right">{connection.path}</span>
+          <i className="glyphicon glyphicon-th-list pull-right"></i>
+        </div>
+        <ul className="control-panel dropdown-menu pull-right" style={{display: this.state.showPopover ? "block" : "none"}}>
+          <li onClick={this.followUser_}>
+            <a href="#"><i className="glyphicon glyphicon-magnet"></i> Follow</a>
+          </li>
+          <li onClick={this.kick_}>
+            <a href="#"><i className="glyphicon glyphicon-eject"></i> Kick</a>
+          </li>
+        </ul>
+      </div>
+    );
+  }
+});
+
+/**
+ * @constructor
+ */
+UserView = React.createClass({
+  componentName: "UserView",
+  mixins: [mixins.PopoverMixin],
+  getInitialState: function () {
+    return {
+      showConnections: true,
+      showPopover: false,
+    };
+  },
+  componentDidMount: function () {
+    return;
+  },
+  /**
+   * @param {Object} event
+   * @private
+   */
+  handleClick_: function (event) {
+    console.log("clicked user", this.props);
+    this.setState({showConnections: !this.state.showConnections});
+  },
+  kick_: function () {
+    this.props.user.connections.forEach(function (conn) {
+      console.log("kicking", conn);
+      editorAction.kick(conn.id);
+    });
+  },
+  editPerms_: function () {
+    modal.showModal(new <PermissionView user={this.props.user} me={this.props.me} title={"Edit Permissions for " + this.props.user.id}/>);
+  },
+  followUser_: function () {
+    editorAction.follow(this.props.user.id);
+  },
+  /**
+   * @returns {XML}
+   */
+  render: function () {
+    var connectionNodes, user, clientList, isAdmin, me;
+
+    user = this.props.user;
+    me = this.props.me;
+    isAdmin = me.isAdmin;
+    clientList = [];
+    connectionNodes = user.connections.map(function (connection) {
+      clientList.push(connection.client);
+      return (
+        new <Connection connection={connection} key={connection.id} me={this.props.me} username={user.username}/>
+      );
+    }, this);
+    return (
+      <div className="user-list-header client-list-item">
+        <div className="user-name-path" onClick={this.handleClick_}>
+          <span>
+            <i className={"userlist-icon glyphicon glyphicon-user highlight_" + user.color} style={{borderColor: user.color}}></i>
+            {user.id}
+          </span>
+          <div className="pull-right" onMouseLeave={this.handleMouseLeave} onClick={this.handleClick} onMouseEnter={this.handleMouseEnter}>
+            <div className="dropdown">
+              <i className="glyphicon glyphicon-cog"></i>
+            </div>
+            <ul className="dropdown-menu" style={{display: this.state.showPopover ? "block" : "none"}}>
+              <li>
+                <a target="_blank" href={"/" + user.id+"/"}><i className="glyphicon glyphicon-info-sign"></i> Info for {user.id}</a>
+              </li>
+              <li onClick={this.followUser_}>
+                <a href="#"><i className="glyphicon glyphicon-magnet"></i> Follow</a>
+              </li>
+              {isAdmin &&
+                <li onClick={this.kick_}>
+                  <a href="#"><i className="glyphicon glyphicon-eject"></i> Kick</a>
+                </li>
+              }
+              {(!user.isMe && isAdmin) &&
+                <li onClick={this.editPerms_}>
+                  <a href="#"><i className="glyphicon glyphicon-cog"></i> Permissions</a>
+                </li>
+              }
+            </ul>
+          </div>
+        </div>
+        <div style={{display: this.state.showConnections ? "block" : "none"}}>
+          {connectionNodes}
+        </div>
+      </div>
+    );
+  },
+  /**
+   * @param {number} connectionId
+   */
+  kickConnection: function () {
+    console.log("kicking", this.props.user.username());
+    //Iterate over connections and call kick actions for each.
+  },
+  /**
+   * @param {Object} event
+   */
+  handleKick_: function (event) {
+    event.preventDefault();
+    this.props.kickUser(this.props.user);
+  }
+});
+
+/**
+ * @extends {React.Component}
+ * @constructor
+ */
+UserlistView = React.createClass({
+  componentName: "UserlistView",
+  mixins: [flux.createAutoBinder(['users'])],
+  /** @inheritDoc */
+  render: function () {
+    var userNodes;
+    userNodes = this.props.users.map(function (user) {
+      return (
+        new <UserView user={user} key={user.id} me={this.props.me} />
+      );
+    }, this);
+    return (
+      <div className="user-list sidebar-list foo">
+        {userNodes}
+      </div>
+    );
+  }
+});
+
+
+module.exports = UserlistView;
