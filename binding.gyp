@@ -11,6 +11,7 @@
       'conditions': [
         ['OS=="mac"', {
           'include_dirs': [
+            '/usr/local/include',
             '/usr/local/include/QtCore'
           ],
           'libraries': [
@@ -21,6 +22,10 @@
           }
         }],
         ['OS=="linux"', {
+          'include_dirs': [
+            '/usr/local/include',
+            '/usr/local/include/QtCore'
+          ],
           'cflags': [
             '<!@(pkg-config --cflags QtCore)'
           ],
@@ -45,6 +50,7 @@
       'conditions': [
         ['OS=="mac"', {
           'include_dirs': [
+            '/usr/local/include',
             '/usr/local/include/QtCore'
           ],
           'libraries': [
@@ -55,6 +61,10 @@
           }
         }],
         ['OS=="linux"', {
+          'include_dirs': [
+            '/usr/local/include',
+            '/usr/local/include/QtCore'
+          ],
           'cflags': [
             '<!@(pkg-config --cflags QtCore)'
           ],
