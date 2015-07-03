@@ -6,8 +6,9 @@
         'src/diff_match_patch.cpp',
         'src/dmp.cc'
       ],
-      'cflags': [ '-fno-exceptions', '-std=c++11' ],
-      'cflags_cc': [ '-fno-exceptions'],
+      'cflags': [ '-std=c++11' ],
+      'cflags!': [ '-fno-exceptions' ],
+      'cflags_cc!': [ '-fno-exceptions'],
       'conditions': [
         ['OS=="mac"', {
           'include_dirs': [
@@ -48,8 +49,9 @@
         'src/diff_match_patch_test.cpp',
         'src/diff_match_patch.cpp'
       ],
-      'cflags': [ '-fno-exceptions', '-std=c++11' ],
-      'cflags_cc': [ '-fno-exceptions'],
+      'cflags': [ '-std=c++11' ],
+      'cflags!': [ '-fno-exceptions' ],
+      'cflags_cc!': [ '-fno-exceptions'],
       'conditions': [
         ['OS=="mac"', {
           'include_dirs': [
