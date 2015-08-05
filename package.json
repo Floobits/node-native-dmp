@@ -12,7 +12,7 @@
     "Matt Kaniaris <mkaniaris@gmail.com>",
     "Geoff Greer <geoff@greer.fm>"
   ],
-  "version": "0.2.2",
+  "version": "0.3.0",
   "main": "./lib/dmp.js",
   "dependencies": {
   },
@@ -21,7 +21,7 @@
   "optionalDependencies": {
   },
   "engines": {
-    "node": ">=0.12.0"
+    "node": ">=3.0"
   },
   "directories": {
     "lib": "./lib",

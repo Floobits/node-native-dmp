@@ -115,16 +115,12 @@ void PatchApply(const FunctionCallbackInfo<Value>& args) {
     return;
   }
 
-  // node::Buffer *slow_buffer = node::Buffer::New(isolate, result.first, result.first.length());
-
-  // Turn slow buffer into fast buffer. Taken from http://luismreis.github.io/node-bindings-guide/docs/returning.html
-  // Local<Object> globalObj = Context::GetCurrent()->Global();
-  // Local<Function> bufferConstructor = Local<Function>::Cast(globalObj->Get(String::NewFromUtf8(isolate, "Buffer")));
-  // Handle<Value> constructorArgs[3] = { slow_buffer->handle_, Integer::New(isolate, node::Buffer::Length(slow_buffer)), Integer::New(isolate, 0) };
-  // Local<Object> fast_buffer = bufferConstructor->NewInstance(3, constructorArgs);
-
-  arr->Set(0, node::Buffer::New(isolate, result.first, result.first.length()));
-
+  MaybeLocal<Object> mb = node::Buffer::New(isolate, result.first.data(), result.first.length());
+  Local<Object> buf;
+  if (!mb.ToLocal(&buf)) {
+    isolate->ThrowException(Exception::Error(String::NewFromUtf8(isolate, "Unknown error in MaybeLocal::ToLocal()")));
+  }
+  arr->Set(0, buf);
   args.GetReturnValue().Set(arr);
   return;
 }
