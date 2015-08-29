@@ -17,6 +17,8 @@
   "dependencies": {
   },
   "devDependencies": {
+    "eslint": "1.x",
+    "eslint-config-floobits": "*"
   },
   "optionalDependencies": {
   },
@@ -28,6 +30,7 @@
     "src": "./src"
   },
   "scripts": {
+    "lint": "eslint .",
     "test": "./test/run_tests",
     "install": "node-gyp rebuild"
   },
