@@ -4,7 +4,7 @@ C++ version of [diff-match-patch](https://code.google.com/p/google-diff-match-pa
 
 ### Development status: Working. We use it in production.
 
-[![Floobits Status](https://floobits.com/Floobits/native-dmp.png)](https://floobits.com/Floobits/native-dmp/redirect)
+[![Floobits Status](https://floobits.com/Floobits/native-dmp.svg)](https://floobits.com/Floobits/native-dmp/redirect)
 
 ## Usage
 
