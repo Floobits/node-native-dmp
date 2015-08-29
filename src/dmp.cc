@@ -115,7 +115,7 @@ void PatchApply(const FunctionCallbackInfo<Value>& args) {
     return;
   }
 
-  MaybeLocal<Object> mb = node::Buffer::New(isolate, result.first.data(), result.first.length());
+  MaybeLocal<Object> mb = node::Buffer::Copy(isolate, result.first, result.first.length());
   Local<Object> buf;
   if (!mb.ToLocal(&buf)) {
     isolate->ThrowException(Exception::Error(String::NewFromUtf8(isolate, "Unknown error in MaybeLocal::ToLocal()")));
