@@ -1,4 +1,3 @@
-/*global expected: true */
 "use strict";
 
 /**
@@ -21,7 +20,7 @@
  */
 
 const dmp = require("../build/Release/dmp");
-const assert = require('assert');
+const assert = require("assert");
 
 /**
  * The data structure representing a diff is an array of tuples:
@@ -36,7 +35,6 @@ function assertEquals(msg, v1, v2) {
   if (v2 === undefined) {
     // msg is optional.
     v2 = v1;
-    expected = msg;
     msg = 'Expected: \'' + v2 + '\' Actual: \'' + v1 + '\'';
   }
   v1 = JSON.stringify(v1);
