@@ -12,16 +12,14 @@
     "Matt Kaniaris <mkaniaris@gmail.com>",
     "Geoff Greer <geoff@greer.fm>"
   ],
-  "version": "0.3.0",
+  "version": "0.3.1",
   "main": "./lib/dmp.js",
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "eslint": "1.x",
     "eslint-config-floobits": "*"
   },
-  "optionalDependencies": {
-  },
+  "optionalDependencies": {},
   "engines": {
     "node": ">=3.0"
   },
