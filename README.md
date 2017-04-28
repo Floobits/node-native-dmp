@@ -4,7 +4,10 @@ C++ version of [diff-match-patch](https://code.google.com/p/google-diff-match-pa
 
 ### Development status: Working. We use it in production.
 
+[![Build Status](https://travis-ci.org/Floobits/node-native-dmp.svg?branch=master)](https://travis-ci.org/Floobits/node-native-dmp)
+
 [![Floobits Status](https://floobits.com/Floobits/native-dmp.svg)](https://floobits.com/Floobits/native-dmp/redirect)
+
 
 ## Dependencies
 
