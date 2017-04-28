@@ -6,6 +6,11 @@ C++ version of [diff-match-patch](https://code.google.com/p/google-diff-match-pa
 
 [![Floobits Status](https://floobits.com/Floobits/native-dmp.svg)](https://floobits.com/Floobits/native-dmp/redirect)
 
+## Dependencies
+
+This is a [native module](https://nodejs.org/api/addons.html) that depends on Qt5.
+
+
 ## Usage
 
 Here is an example of applying a patch:

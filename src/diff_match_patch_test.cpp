@@ -1093,7 +1093,7 @@ void diff_match_patch_test::assertEquals(const QString &strCase, const QMap<QCha
     i2.next();
     if (i1.key() != i2.key() || i1.value() != i2.value()) {
       qDebug("%s FAIL\nExpected: (%c, %d)\nActual: (%c, %d)", qPrintable(strCase),
-          i1.key().toAscii(), i1.value(), i2.key().toAscii(), i2.value());
+          i1.key().toLatin1(), i1.value(), i2.key().toLatin1(), i2.value());
       throw strCase;
     }
   }
@@ -1101,13 +1101,13 @@ void diff_match_patch_test::assertEquals(const QString &strCase, const QMap<QCha
   if (i1.hasNext()) {
     i1.next();
     qDebug("%s FAIL\nExpected: (%c, %d)\nActual: none",
-        qPrintable(strCase), i1.key().toAscii(), i1.value());
+        qPrintable(strCase), i1.key().toLatin1(), i1.value());
     throw strCase;
   }
   if (i2.hasNext()) {
     i2.next();
     qDebug("%s FAIL\nExpected: none\nActual: (%c, %d)",
-        qPrintable(strCase), i2.key().toAscii(), i2.value());
+        qPrintable(strCase), i2.key().toLatin1(), i2.value());
     throw strCase;
   }
   qDebug("%s OK", qPrintable(strCase));
@@ -1254,11 +1254,11 @@ QList<Diff> diff_match_patch_test::diffList(Diff d1, Diff d2, Diff d3, Diff d4, 
 
 
 /*
-Compile instructions for MinGW and QT4 on Windows:
+Compile instructions for MinGW and QT5 on Windows:
 qmake -project
 qmake
 mingw32-make
-g++ -o diff_match_patch_test debug\diff_match_patch_test.o debug\diff_match_patch.o \qt4\lib\libQtCore4.a
+g++ -o diff_match_patch_test debug\diff_match_patch_test.o debug\diff_match_patch.o \qt5\lib\libQtCore5.a
 diff_match_patch_test.exe
 
 Compile insructions for OS X:

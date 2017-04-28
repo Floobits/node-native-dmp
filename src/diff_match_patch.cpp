@@ -2161,7 +2161,7 @@ QList<Patch> diff_match_patch::patch_fromText(const QString &textline) {
         text.removeFirst();
         continue;
       }
-      sign = text.front()[0].toAscii();
+      sign = text.front()[0].toLatin1();
       line = safeMid(text.front().toUtf8(), 1);
       line = line.replace("+", "%2B");  // decode would change all "+" to " "
       line = QByteArray::fromPercentEncoding(line);
