@@ -29,6 +29,7 @@ const assert = require("assert");
  */
 const DIFF_DELETE = -1;
 const DIFF_INSERT = 1;
+// eslint-disable-next-line no-unused-vars
 const DIFF_EQUAL = 0;
 
 function assertEquals(msg, v1, v2) {
@@ -42,6 +43,7 @@ function assertEquals(msg, v1, v2) {
   assert.equal(v1, v2, msg);
 }
 
+// eslint-disable-next-line no-unused-vars
 function assertTrue(msg, actual) {
   if (actual === undefined) {
     // msg is optional.
@@ -52,6 +54,7 @@ function assertTrue(msg, actual) {
   }
 }
 
+// eslint-disable-next-line no-unused-vars
 function assertFalse(msg, actual) {
   if (actual === undefined) {
     // msg is optional.
@@ -107,6 +110,7 @@ function assertEquivalent(msg, expected, actual) {
   }
 }
 
+// eslint-disable-next-line no-unused-vars
 function diff_rebuildtexts(diffs) {
   // Construct the two texts which made up the diff originally.
   var text1 = '',

@@ -1,5 +1,5 @@
 #!/bin/bash
 
 node ./test/test.js && \
-node ./test/patch_make.js && \
+# node ./test/patch_make.js && \
 ./build/Release/dmp-test
