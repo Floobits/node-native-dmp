@@ -27,17 +27,17 @@
         }],
         ['OS=="linux"', {
           'include_dirs': [
-            '/usr/local/opt/qt/include',
-            '/usr/local/opt/qt/include/QtCore'
+            '/usr/local/include',
+            '/usr/local/include/QtCore'
           ],
           'cflags': [
-            '<!@(pkg-config --cflags QtCore)'
+            '<!@(pkg-config --cflags Qt5Core)'
           ],
           'ldflags': [
-            '<!@(pkg-config --libs-only-L --libs-only-other QtCore)'
+            '<!@(pkg-config --libs-only-L --libs-only-other Qt5Core)'
           ],
           'libraries': [
-            '<!@(pkg-config --libs-only-l QtCore)'
+            '<!@(pkg-config --libs-only-l Qt5Core)'
           ]
         }]
       ]
@@ -70,17 +70,17 @@
         }],
         ['OS=="linux"', {
           'include_dirs': [
-            '/usr/local/opt/qt/include',
-            '/usr/local/opt/qt/include/QtCore'
+            '/usr/local/include',
+            '/usr/local/include/QtCore'
           ],
           'cflags': [
-            '<!@(pkg-config --cflags QtCore)'
+            '<!@(pkg-config --cflags Qt5Core)'
           ],
           'ldflags': [
-            '<!@(pkg-config --libs-only-L --libs-only-other QtCore)'
+            '<!@(pkg-config --libs-only-L --libs-only-other Qt5Core)'
           ],
           'libraries': [
-            '<!@(pkg-config --libs-only-l QtCore)'
+            '<!@(pkg-config --libs-only-l Qt5Core)'
           ]
         }]
       ]
