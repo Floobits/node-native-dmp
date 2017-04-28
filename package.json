@@ -16,12 +16,12 @@
   "main": "./lib/dmp.js",
   "dependencies": {},
   "devDependencies": {
-    "eslint": "1.x",
+    "eslint": "3.x",
     "eslint-config-floobits": "*"
   },
   "optionalDependencies": {},
   "engines": {
-    "node": ">=3.0"
+    "node": ">=4.x"
   },
   "directories": {
     "lib": "./lib",
