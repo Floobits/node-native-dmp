@@ -21,7 +21,7 @@
   },
   "optionalDependencies": {},
   "engines": {
-    "node": ">=4.x"
+    "node": ">=8.x"
   },
   "directories": {
     "lib": "./lib",

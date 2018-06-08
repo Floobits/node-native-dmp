@@ -140,7 +140,7 @@ void set_Patch_DeleteThreshold(const FunctionCallbackInfo<Value>& args) {
     return;
   }
 
-  dmp.Patch_DeleteThreshold = args[0]->ToNumber()->Value();
+  dmp.Patch_DeleteThreshold = args[0]->ToNumber(isolate)->Value();
   args.GetReturnValue().Set(Undefined(isolate));
 }
 
@@ -159,7 +159,7 @@ void set_Match_Threshold(const FunctionCallbackInfo<Value>& args) {
     return;
   }
 
-  dmp.Match_Threshold = args[0]->ToNumber()->Value();
+  dmp.Match_Threshold = args[0]->ToNumber(isolate)->Value();
   args.GetReturnValue().Set(Undefined(isolate));
   return;
 }
@@ -179,7 +179,7 @@ void set_Match_Distance(const FunctionCallbackInfo<Value>& args) {
     return;
   }
 
-  dmp.Match_Distance = args[0]->ToNumber()->Value();
+  dmp.Match_Distance = args[0]->ToNumber(isolate)->Value();
   args.GetReturnValue().Set(Undefined(isolate));
 }
 
