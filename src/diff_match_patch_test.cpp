@@ -1125,7 +1125,7 @@ void diff_match_patch_test::assertEquals(const QString &strCase, const QStringLi
 void diff_match_patch_test::assertEquals(const QString &strCase, const QStringList &list1, const QByteArrayList &list2) {
   if (list1.length() != list2.length()) {
     qDebug("%s FAIL\nExpected: %s items\nActual: %s items", qPrintable(strCase),
-        qPrintable(list1.length()), qPrintable(list2.length()));
+        qPrintable(QString(list1.length())), qPrintable(QString(list2.length())));
     throw strCase;
   }
   for (int i = 0; i < list1.length(); i++) {
